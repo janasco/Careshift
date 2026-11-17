@@ -20,6 +20,7 @@ import {
   CalendarClock,
   ClipboardList,
   FileClock,
+  HeartPulse,
   History,
   LayoutDashboard,
   LogOut,
@@ -37,6 +38,7 @@ export type Role = "admin" | "caregiver";
 const adminNav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/today", label: "Today's Schedule", icon: CalendarClock },
+  { to: "/vitals", label: "Vital Signs", icon: HeartPulse },
   { to: "/caregivers", label: "Caregivers", icon: Users },
   { to: "/shifts", label: "Shifts", icon: ClipboardList },
   { to: "/tasks", label: "Task Templates", icon: ClipboardList },

@@ -96,6 +96,23 @@ export default defineConfig({
     // Bind to all interfaces so the browser runtime's server-ready event fires.
     host: true,
     port: 5173,
+    // Accept preview/forwarded hostnames (dev server only).
+    allowedHosts: true,
+    // Proxy the local Convex backend through Vite so a single forwarded port
+    // (5173) is enough for the app and its websocket in a remote container.
+    proxy: {
+      "/convex-api": {
+        target: "http://127.0.0.1:3210",
+        changeOrigin: true,
+        ws: true,
+        rewrite: (path) => path.replace(/^\/convex-api/, ""),
+      },
+      "/convex-site": {
+        target: "http://127.0.0.1:3211",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/convex-site/, ""),
+      },
+    },
     // Keep HMR on, but disable full-screen error overlay
     hmr: {
       overlay: false,

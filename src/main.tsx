@@ -64,7 +64,18 @@ class ToolbarErrorBoundary extends React.Component<
   }
 }
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+const configuredConvexUrl = import.meta.env.VITE_CONVEX_URL as string;
+// In local development the Convex backend listens on 127.0.0.1. When the app is
+// viewed through a forwarded port or another host, route the client through
+// Vite's same-origin proxy (see server.proxy in vite.config.ts) instead.
+const isLocalConvexUrl =
+  import.meta.env.DEV &&
+  configuredConvexUrl != null &&
+  /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(configuredConvexUrl);
+const convexUrl = isLocalConvexUrl
+  ? `${window.location.origin}/convex-api`
+  : configuredConvexUrl;
+const convex = new ConvexReactClient(convexUrl);
 
 function ServiceWorkerRegistration() {
   useEffect(() => {
