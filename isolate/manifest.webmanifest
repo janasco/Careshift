@@ -1,0 +1,18 @@
+{
+  "name": "ShiftAid — Caregiver Task & Shift Tracking",
+  "short_name": "ShiftAid",
+  "description": "Caregiver shift and checklist tracking with a live supervisor dashboard.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
