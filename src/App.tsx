@@ -15,6 +15,7 @@ const Landing = lazyPage(() => import("./pages/Landing"));
 const AuthPage = lazyPage(() => import("./pages/Auth"));
 const AdminDashboard = lazyPage(() => import("./pages/admin/AdminDashboard"));
 const TodaySchedule = lazyPage(() => import("./pages/admin/TodaySchedule"));
+const VitalSigns = lazyPage(() => import("./pages/admin/VitalSigns"));
 const Caregivers = lazyPage(() => import("./pages/admin/Caregivers"));
 const Shifts = lazyPage(() => import("./pages/admin/Shifts"));
 const TaskTemplates = lazyPage(() => import("./pages/admin/TaskTemplates"));
@@ -87,6 +88,7 @@ export function App() {
         {/* Admin */}
         <Route path="/dashboard" element={<AdminPage><AdminDashboard /></AdminPage>} />
         <Route path="/today" element={<AdminPage><TodaySchedule /></AdminPage>} />
+        <Route path="/vitals" element={<AdminPage><VitalSigns /></AdminPage>} />
         <Route path="/caregivers" element={<AdminPage><Caregivers /></AdminPage>} />
         <Route path="/shifts" element={<AdminPage><Shifts /></AdminPage>} />
         <Route path="/tasks" element={<AdminPage><TaskTemplates /></AdminPage>} />

@@ -134,6 +134,28 @@ const schema = defineSchema(
       .index("by_task", ["scheduledTaskId"])
       .index("by_caregiverId", ["caregiverId"]),
 
+    // Manually reported vital signs and shift observations. Dates are optional
+    // because some reports only include a time of day.
+    vitalSigns: defineTable({
+      patientName: v.optional(v.string()),
+      caregiverId: v.optional(v.id("caregivers")),
+      caregiverName: v.optional(v.string()),
+      timeLabel: v.optional(v.string()),
+      bp: v.optional(v.string()),
+      spo2: v.optional(v.number()),
+      pulse: v.optional(v.number()),
+      respiration: v.optional(v.number()),
+      temperature: v.optional(v.string()),
+      notes: v.string(),
+      source: v.optional(v.string()),
+      importKey: v.optional(v.string()),
+      recordedAt: v.optional(v.number()),
+      createdAt: v.number(),
+    })
+      .index("by_createdAt", ["createdAt"])
+      .index("by_patient", ["patientName"])
+      .index("by_caregiverId", ["caregiverId"]),
+
     auditLogs: defineTable({
       userId: v.optional(v.id("users")),
       action: v.string(),
