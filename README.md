@@ -12,15 +12,46 @@ designed to scale from 3 caregivers to 50+ without schema changes.
 
 ---
 
+## Repository structure
+
+```
+Careshift/
+├─ apps/
+│  ├─ web/                 # admin/supervisor website (Vite + React)
+│  │  ├─ src/pages/admin/  # dashboard, patients, staff, meds, visits, reports
+│  │  └─ src/pages/CaregiverChecklist.tsx  # mobile-first PWA checklist
+│  └─ mobile/              # caregiver app (Expo / React Native)
+│     ├─ app/(auth)/       # sign in
+│     └─ app/(app)/        # checklist, visit clock-in/out, profile
+├─ packages/
+│  └─ shared/              # shared constants, types, date/time helpers
+├─ convex/                 # single backend for web + mobile
+├─ package.json            # npm workspaces
+└─ convex.json
+```
+
 ## Quick start
 
-The app is already running in this workspace. For a fresh environment:
+```bash
+npm install
+
+# Terminal 1 — backend
+npm run convex:dev
+
+# Terminal 2 — website
+npm run dev:web           # http://localhost:5173
+
+# Optional — Expo caregiver app
+npm run dev:mobile
+```
+
+To push schema/functions once without the watcher:
 
 ```bash
-bun install
-bun convex dev --once   # push schema + functions, regenerate types
-bun run dev             # start the Vite dev server
+npm run convex:once
 ```
+
+See `apps/mobile/README.md` for phone/emulator setup and the Convex URL.
 
 ### First-run setup
 
@@ -82,34 +113,62 @@ you start fresh; the admin account is recreated through the setup form again.
 ## Architecture
 
 ```
-src/
-  convex/            # Backend: schema, auth, queries, mutations
-    schema.ts        # users, profiles, caregivers, shifts, taskTemplates,
-                     # assignments, scheduledTasks, taskCompletions, issues, auditLogs
-    profiles.ts      # profile + caregiver account management, audit helper
-    shifts.ts        # shift CRUD
-    tasks.ts         # task template CRUD (soft-delete)
-    assignments.ts   # recurring schedules + daily materialization
-    checklist.ts     # caregiver checklist queries + complete/report-issue mutations
-    admin.ts         # dashboard summary, directory, history, issues
-    reports.ts       # daily / caregiver / shift / trend reports
-    timeline.ts      # caregiver activity timelines
-    issues.ts        # issue resolution
-    audit.ts         # audit log query
-    bootstrap.ts     # workspace status/reset + one-time admin claim
-    shared.ts        # constants + pure time math shared by server and client
-  pages/
-    Landing.tsx      # marketing page
-    Auth.tsx         # password sign-in + one-time admin setup
-    CaregiverChecklist.tsx   # mobile checklist (offline queue)
-    admin/           # 11 admin pages
-  components/        # AppShell (sidebar/nav), Timeline, ui/ (shadcn)
-  hooks/             # use-profile, use-clock, use-offline-queue, use-auth
-  lib/               # time formatters, status logic, CSV/print export, zod schemas
-public/
-  sw.js              # service worker (offline shell)
-  manifest.webmanifest
+apps/web/src/          # Website (Vite + React)
+  pages/admin/         # dashboard, patients, caregivers, shifts, tasks,
+                       # assignments, medications, care log, vitals, visits,
+                       # history, reports, issues, audit, settings
+  pages/CaregiverChecklist.tsx  # mobile-first PWA checklist + clock-in/out
+  components/          # AppShell, Timeline, ui/ (shadcn)
+  hooks/               # profile, clock, offline queue, auth
+  lib/                 # formatters, status logic, CSV/print export, schemas
+apps/mobile/app/       # Expo caregiver app
+  (auth)/sign-in.tsx
+  (app)/checklist.tsx
+  (app)/visit.tsx
+  (app)/profile.tsx
+packages/shared/       # constants, severity/type helpers, date/time helpers
+convex/                # Backend shared by both apps
+  schema.ts            # users, profiles, caregivers, shifts, patients, tasks,
+                       # assignments, scheduledTasks, completions, issues,
+                       # vitals, care events, medications, medication logs,
+                       # visits, audit logs
+  profiles.ts          # profile + caregiver account management, audit helper
+  shifts.ts            # shift CRUD + safe delete
+  tasks.ts             # task template CRUD (soft-delete)
+  assignments.ts       # recurring schedules + daily materialization
+  checklist.ts         # caregiver checklist queries + complete/report-issue
+  patients.ts          # patient profiles and summaries
+  vitals.ts            # vital-sign readings and trends
+  careEvents.ts        # toileting, medication, stoma, pain, intake log
+  medications.ts       # schedules, dose logs, adherence, stock
+  visits.ts            # EVV clock-in/out and GPS audit
+  admin.ts             # dashboard summary, directory, history, issues
+  reports.ts           # daily / caregiver / shift / trend reports
+  timeline.ts          # caregiver activity timelines
+  issues.ts            # issue resolution
+  audit.ts             # audit log query
+  bootstrap.ts         # workspace status/reset + one-time admin claim
+  shared.ts            # constants + pure time math shared by server
 ```
+
+### Design decisions
+
+- **One backend, two clients**: the website and Expo app share the same Convex
+  schema, auth, and generated API types.
+- **Server-side everything**: completion timestamps, status transitions, and the
+  audit trail are written in Convex mutations. The client cannot forge them.
+- **Patients are first-class**: vitals, care events, and medications link to a
+  patient record; aliases map alternate names to the same person.
+- **Historical immutability**: completed records are never edited or deleted.
+  Deactivating a template/assignment stops future generation only.
+- **Dynamic caregiver count**: nothing is hard-coded to 3 caregivers. Assignments can
+  target "any caregiver on shift", so new hires instantly receive tasks.
+- **Overnight shifts**: due times before shift start roll to the next calendar day;
+  the materializer and status logic both handle this.
+- **Realtime**: Convex queries are reactive subscriptions — the dashboard updates
+  without page refreshes the moment a caregiver acts.
+- **Extensibility**: photo attachments, pay integration, push notifications, and
+  richer medication recurrence patterns can layer on without breaking changes.
 
 ### Design decisions
 
@@ -132,16 +191,25 @@ public/
 
 ### Environment
 
-No manual env vars needed in this workspace — `VITE_CONVEX_URL` and Convex
-deployment values are provisioned automatically. For a self-managed deployment:
+`convex dev` writes `CONVEX_DEPLOYMENT`, `VITE_CONVEX_URL`, and
+`VITE_CONVEX_SITE_URL` to `.env.local` at the repository root. The website reads
+that file via Vite's `envDir`.
+
+The mobile app reads `apps/mobile/.env.local`:
 
 ```bash
-bunx convex deploy          # push functions to production deployment
-bun run build               # build the frontend (dist/)
+EXPO_PUBLIC_CONVEX_URL=http://YOUR_LAN_IP:3210
 ```
 
-Then host `dist/` on any static host (Vercel, Netlify, Cloudflare Pages) with
-`VITE_CONVEX_URL` pointing at your Convex production deployment.
+For a self-managed deployment:
+
+```bash
+npx convex deploy          # push functions to production deployment
+npm run build:web          # build the website (apps/web/dist)
+```
+
+Then host `apps/web/dist/` on any static host (Vercel, Netlify, Cloudflare
+Pages) with `VITE_CONVEX_URL` pointing at your Convex production deployment.
 
 ### PWA installation
 
