@@ -72,6 +72,8 @@ export default function AppLayout() {
     >
       <Tabs.Screen name="checklist" options={{ title: "Checklist" }} />
       <Tabs.Screen name="visit" options={{ title: "Visit" }} />
+      <Tabs.Screen name="medications" options={{ title: "Meds" }} />
+      <Tabs.Screen name="care" options={{ title: "Care" }} />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
     </Tabs>
   );
