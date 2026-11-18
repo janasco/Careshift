@@ -56,6 +56,7 @@ const schema = defineSchema(
     patients: defineTable({
       fullName: v.string(),
       preferredName: v.optional(v.string()),
+      aliases: v.optional(v.array(v.string())),
       dateOfBirth: v.optional(v.string()), // "YYYY-MM-DD"
       room: v.optional(v.string()),
       address: v.optional(v.string()),
