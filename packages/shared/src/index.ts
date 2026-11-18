@@ -1,4 +1,4 @@
-export const APP_NAME = "Careshift";
+export const APP_NAME = "CareShift";
 
 export const CARE_EVENT_TYPES = [
   "Bowel movement",

@@ -1,4 +1,4 @@
-# ShiftAid — Caregiver Task & Shift Tracking System
+# CareShift — Caregiver Task & Shift Tracking System
 
 A production-ready caregiver shift & checklist tracking system. Caregivers complete
 their daily checklist in one tap on mobile; supervisors monitor progress in real time
@@ -15,7 +15,7 @@ designed to scale from 3 caregivers to 50+ without schema changes.
 ## Repository structure
 
 ```
-Careshift/
+CareShift/
 ├─ apps/
 │  ├─ web/                 # admin/supervisor website (Vite + React)
 │  │  ├─ src/pages/admin/  # dashboard, patients, staff, meds, visits, reports

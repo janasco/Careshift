@@ -120,7 +120,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                   <div className="flex justify-center">
                     <img
                       src={logo}
-                      alt="ShiftAid"
+                      alt="CareShift"
                       width={64}
                       height={64}
                       className="rounded-lg mb-4 mt-4 cursor-pointer"
@@ -131,7 +131,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                     <ShieldCheck className="size-5 text-primary" /> Set up your workspace
                   </CardTitle>
                   <CardDescription>
-                    Create the administrator account for this ShiftAid system.
+                    Create the administrator account for this CareShift system.
                   </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSetup}>
@@ -219,7 +219,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                   <div className="flex justify-center">
                     <img
                       src={logo}
-                      alt="ShiftAid"
+                      alt="CareShift"
                       width={64}
                       height={64}
                       className="rounded-lg mb-4 mt-4 cursor-pointer"
