@@ -12,13 +12,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@convex/_generated/api";
+import { api } from "@/lib/cf-api";
 import { toast } from "sonner";
 import { HeartPulse, Loader2, NotebookPen, Pencil, Plus, UserRound } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "@/lib/cf-api";
 import { Link } from "react-router";
-import type { Id } from "@convex/_generated/dataModel";
+import type { Id } from "@/lib/cf-types";
 
 type PatientSummary = {
   _id: Id<"patients">;

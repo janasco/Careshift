@@ -2,7 +2,14 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { desc, eq } from "drizzle-orm";
-import { caregivers, issues, profiles, scheduledTasks, taskTemplates } from "@careshift/db";
+import {
+  caregivers,
+  issues,
+  profiles,
+  scheduledTasks,
+  shifts,
+  taskTemplates,
+} from "@careshift/db";
 import { getDb } from "../db";
 import { logAudit } from "../lib/audit";
 import { requireAdmin, requireUser } from "../middleware/auth";
@@ -29,12 +36,14 @@ app.get("/", async (c) => {
       resolvedAt: issues.resolvedAt,
       taskName: taskTemplates.name,
       taskDate: scheduledTasks.date,
+      shiftName: shifts.name,
     })
     .from(issues)
     .leftJoin(caregivers, eq(caregivers.id, issues.caregiverId))
     .leftJoin(profiles, eq(profiles.userId, caregivers.userId))
     .leftJoin(scheduledTasks, eq(scheduledTasks.id, issues.scheduledTaskId))
     .leftJoin(taskTemplates, eq(taskTemplates.id, scheduledTasks.templateId))
+    .leftJoin(shifts, eq(shifts.id, scheduledTasks.shiftId))
     .where(status ? eq(issues.status, status) : undefined)
     .orderBy(desc(issues.createdAt));
 

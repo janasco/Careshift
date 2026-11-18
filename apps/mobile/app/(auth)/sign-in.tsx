@@ -1,4 +1,3 @@
-import { useAuthActions } from "@convex-dev/auth/react";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -14,8 +13,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { authClient } from "@/lib/api";
+
 export default function SignIn() {
-  const { signIn } = useAuthActions();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,14 +25,21 @@ export default function SignIn() {
     if (!email.trim() || !password) return;
     setBusy(true);
     try {
-      await signIn("password", {
+      const result = await authClient.signIn.email({
         email: email.trim().toLowerCase(),
         password,
-        flow: "signIn",
       });
+      if (result.error) {
+        throw new Error(result.error.message ?? "Sign-in failed");
+      }
       router.replace("/(app)/checklist");
-    } catch {
-      Alert.alert("Sign-in failed", "Check your email and password, then try again.");
+    } catch (error) {
+      Alert.alert(
+        "Sign-in failed",
+        error instanceof Error
+          ? error.message
+          : "Check your email and password, then try again.",
+      );
     } finally {
       setBusy(false);
     }

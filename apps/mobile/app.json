@@ -15,7 +15,8 @@
           "locationWhenInUsePermission": "Allow CareShift to record your location when you clock in and out."
         }
       ],
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-secure-store"
     ],
     "ios": {
       "supportsTablet": true,

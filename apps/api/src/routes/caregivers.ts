@@ -41,6 +41,7 @@ app.get("/", async (c) => {
   const rows = await db
     .select({
       id: caregivers.id,
+      profileId: profiles.id,
       userId: caregivers.userId,
       fullName: profiles.fullName,
       email: user.email,

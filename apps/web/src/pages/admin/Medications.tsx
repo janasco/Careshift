@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@convex/_generated/api";
+import { api } from "@/lib/cf-api";
 import { useToday } from "@/hooks/use-profile";
 import { toast } from "sonner";
 import {
@@ -44,8 +44,8 @@ import {
   SkipForward,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
-import type { Id } from "@convex/_generated/dataModel";
+import { useMutation, useQuery } from "@/lib/cf-api";
+import type { Id } from "@/lib/cf-types";
 
 type MedicationRow = {
   _id: Id<"medications">;

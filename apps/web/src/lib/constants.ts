@@ -1,12 +1,11 @@
-/** Shared constants re-exported from the Convex-side shared module (single source of truth). */
+/** Shared constants re-exported from the workspace shared package. */
 export {
-  NOW,
   CATEGORIES,
   PRIORITIES,
   ISSUE_TYPES,
   SHIFT_PRESETS,
   ROLE,
-} from "@convex/shared";
-export type { AppRole } from "@convex/shared";
+} from "@careshift/shared";
+export type { AppRole } from "@careshift/shared";
 
 export const APP_NAME = "CareShift";

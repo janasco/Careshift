@@ -37,8 +37,11 @@ CareShift/
 ```bash
 npm install
 
-# Terminal 1 — backend
-npm run convex:dev
+# First run — local D1 database
+npm run db:migrate:local
+
+# Terminal 1 — Cloudflare API
+npm run dev:api           # http://localhost:8787
 
 # Terminal 2 — website
 npm run dev:web           # http://localhost:5173
@@ -47,19 +50,20 @@ npm run dev:web           # http://localhost:5173
 npm run dev:mobile
 ```
 
-To push schema/functions once without the watcher:
+The legacy Convex backend is still available while the migration is finalized:
 
 ```bash
+npm run convex:dev
 npm run convex:once
 ```
 
-See `apps/mobile/README.md` for phone/emulator setup and the Convex URL.
+See `apps/mobile/README.md` for phone/emulator setup and the API URL.
 
-## Cloudflare backend (migration in progress)
+## Cloudflare backend
 
-The new backend lives in `apps/api` (Workers + Hono + D1 + Better Auth), with the
-D1 schema in `packages/db`. The existing Convex app remains the live backend while
-the migration is phased. The pre-migration code is tagged `convex-backup`.
+The backend lives in `apps/api` (Workers + Hono + D1 + Better Auth), with the D1
+schema in `packages/db`. The website and Expo app now use this API. Convex is kept
+only as a rollback path and is tagged `convex-backup`.
 
 ```bash
 npm run db:generate        # generate Drizzle SQL
@@ -79,8 +83,15 @@ Phase 1 currently includes:
 - Durable Object realtime skeleton + broadcast plumbing
 - Cron trigger placeholder for daily materialization
 
-The current website and Expo app still use Convex. The next phase switches both
-clients to this API and imports the existing data into D1.
+The Convex data has been imported into local D1. Imported accounts use the
+temporary password supplied during import until the admin resets them.
+
+Remaining before production:
+
+- create the remote D1 database and deploy the Worker
+- deploy the website to Cloudflare Pages
+- reset imported account passwords
+- wire realtime invalidation into React Query (the Durable Object is ready)
 
 See `apps/api/README.md` for endpoints, deploy steps, and secrets.
 

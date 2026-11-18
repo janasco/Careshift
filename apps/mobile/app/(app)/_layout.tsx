@@ -1,6 +1,5 @@
-import { useAuthActions } from "@convex-dev/auth/react";
+import { useQuery } from "@tanstack/react-query";
 import { Redirect, Tabs } from "expo-router";
-import { useConvexAuth, useQuery } from "convex/react";
 import {
   ActivityIndicator,
   Pressable,
@@ -10,14 +9,17 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { api } from "@/lib/convex";
+import { apiGet, authClient } from "@/lib/api";
 
 export default function AppLayout() {
-  const { isAuthenticated, isLoading } = useConvexAuth();
-  const { signOut } = useAuthActions();
-  const me = useQuery(api.profiles.me);
+  const { data: session, isPending } = authClient.useSession();
+  const me = useQuery({
+    queryKey: ["me"],
+    queryFn: () => apiGet("/api/me"),
+    enabled: Boolean(session),
+  });
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#0f766e" />
@@ -25,11 +27,11 @@ export default function AppLayout() {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!session) {
     return <Redirect href="/(auth)/sign-in" />;
   }
 
-  if (me === undefined) {
+  if (me.isLoading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#0f766e" />
@@ -37,7 +39,7 @@ export default function AppLayout() {
     );
   }
 
-  if (!me?.profile || me.profile.role !== "caregiver") {
+  if (!me.data?.profile || me.data.profile.role !== "caregiver") {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.notice}>
@@ -48,7 +50,7 @@ export default function AppLayout() {
           </Text>
           <Pressable
             onPress={async () => {
-              await signOut();
+              await authClient.signOut();
             }}
             style={styles.signOut}
           >

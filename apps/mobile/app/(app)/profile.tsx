@@ -1,5 +1,4 @@
-import { useAuthActions } from "@convex-dev/auth/react";
-import { useQuery } from "convex/react";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
   ActivityIndicator,
@@ -11,14 +10,16 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { api } from "@/lib/convex";
+import { apiGet, authClient } from "@/lib/api";
 
 export default function ProfileScreen() {
-  const me = useQuery(api.profiles.me);
-  const { signOut } = useAuthActions();
+  const me = useQuery({
+    queryKey: ["me"],
+    queryFn: () => apiGet("/api/me"),
+  });
   const router = useRouter();
 
-  if (me === undefined) {
+  if (me.isLoading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#0f766e" />
@@ -32,24 +33,24 @@ export default function ProfileScreen() {
         <View style={styles.card}>
           <Text style={styles.eyebrow}>Caregiver</Text>
           <Text style={styles.name}>
-            {me?.profile?.fullName ?? me?.user?.name ?? "Caregiver"}
+            {me.data?.profile?.fullName ?? me.data?.user?.name ?? "Caregiver"}
           </Text>
-          <Text style={styles.email}>{me?.user?.email}</Text>
+          <Text style={styles.email}>{me.data?.user?.email}</Text>
           <View style={styles.row}>
             <Text style={styles.label}>Role</Text>
-            <Text style={styles.value}>{me?.profile?.role ?? "—"}</Text>
+            <Text style={styles.value}>{me.data?.profile?.role ?? "—"}</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>Shift</Text>
             <Text style={styles.value}>
-              {me?.profile?.shiftId ? "Assigned" : "Not assigned"}
+              {me.data?.profile?.shiftId ? "Assigned" : "Not assigned"}
             </Text>
           </View>
         </View>
 
         <Pressable
           onPress={async () => {
-            await signOut();
+            await authClient.signOut();
             router.replace("/(auth)/sign-in");
           }}
           style={({ pressed }) => [styles.signOut, pressed && { opacity: 0.8 }]}

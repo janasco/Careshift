@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -12,10 +12,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { formatTimeLabel, todayStr } from "@careshift/shared";
 
-import { api, type Id } from "@/lib/convex";
+import { apiGet, apiPost } from "@/lib/api";
 
 type Task = {
-  _id: Id<"scheduledTasks">;
+  _id: string;
   taskName: string;
   category: string;
   priority: string;
@@ -27,23 +27,40 @@ type Task = {
 
 export default function ChecklistScreen() {
   const today = todayStr();
-  const me = useQuery(api.profiles.me);
-  const shifts = useQuery(api.shifts.listShifts);
-  const tasks = useQuery(api.checklist.myTasksForDate, { date: today }) as
-    | Task[]
-    | undefined;
-  const completeTask = useMutation(api.checklist.completeTask);
+  const queryClient = useQueryClient();
+  const me = useQuery({
+    queryKey: ["me"],
+    queryFn: () => apiGet("/api/me"),
+  });
+  const shifts = useQuery({
+    queryKey: ["shifts"],
+    queryFn: () => apiGet("/api/shifts"),
+  });
+  const tasks = useQuery({
+    queryKey: ["checklist", today],
+    queryFn: () => apiGet<Task[]>(`/api/tasks/checklist/my-tasks?date=${today}`),
+  });
+  const completeTask = useMutation({
+    mutationFn: (taskId: string) =>
+      apiPost("/api/tasks/checklist/complete", { taskId }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["checklist", today] });
+    },
+  });
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  const shift = shifts?.find((row) => row._id === me?.profile?.shiftId);
-  const done = (tasks ?? []).filter((task) => task.status === "completed").length;
-  const total = tasks?.length ?? 0;
+  const shift = shifts.data?.find(
+    (row: any) => row._id === me.data?.profile?.shiftId,
+  );
+  const taskList = tasks.data ?? [];
+  const done = taskList.filter((task) => task.status === "completed").length;
+  const total = taskList.length;
   const pct = total ? Math.round((done / total) * 100) : 0;
 
   const complete = async (task: Task) => {
     setBusyId(task._id);
     try {
-      await completeTask({ taskId: task._id });
+      await completeTask.mutateAsync(task._id);
     } catch (error) {
       Alert.alert(
         "Could not complete task",
@@ -59,7 +76,7 @@ export default function ChecklistScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.hero}>
           <Text style={styles.eyebrow}>{shift?.name ?? "My shift"}</Text>
-          <Text style={styles.title}>{me?.profile?.fullName ?? me?.user?.name ?? "Caregiver"}</Text>
+          <Text style={styles.title}>{me.data?.profile?.fullName ?? me.data?.user?.name ?? "Caregiver"}</Text>
           <Text style={styles.subtitle}>{today}</Text>
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${pct}%` }]} />
@@ -69,13 +86,13 @@ export default function ChecklistScreen() {
           </Text>
         </View>
 
-        {tasks === undefined && (
+        {tasks.isLoading && (
           <View style={styles.loading}>
             <ActivityIndicator size="large" color="#0f766e" />
           </View>
         )}
 
-        {tasks?.length === 0 && (
+        {!tasks.isLoading && taskList.length === 0 && (
           <View style={styles.empty}>
             <Text style={styles.emptyTitle}>No tasks assigned today</Text>
             <Text style={styles.emptyText}>
@@ -84,7 +101,7 @@ export default function ChecklistScreen() {
           </View>
         )}
 
-        {(tasks ?? []).map((task) => {
+        {taskList.map((task) => {
           const isDone =
             task.status === "completed" || task.status === "completed_with_issue";
           return (

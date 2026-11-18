@@ -10,14 +10,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { api } from "@convex/_generated/api";
+import { api } from "@/lib/cf-api";
 import { formatTime } from "@/lib/time";
 import { downloadCsv } from "@/lib/export";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Download, FileClock, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { useQuery } from "convex/react";
+import { useQuery } from "@/lib/cf-api";
 
 const ACTION_FILTERS = [
   { value: "", label: "All" },

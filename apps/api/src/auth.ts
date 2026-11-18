@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { expo } from "@better-auth/expo";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { schema } from "@careshift/db";
 import { getDb } from "./db";
@@ -21,7 +22,9 @@ export function createAuth(env: Bindings) {
       "http://127.0.0.1:5173",
       "http://10.0.0.243:5173",
       "careshift://",
+      "exp://**",
     ],
+    plugins: [expo()],
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: false,

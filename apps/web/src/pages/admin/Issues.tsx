@@ -10,14 +10,14 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api } from "@convex/_generated/api";
+import { api } from "@/lib/cf-api";
 import { formatTime } from "@/lib/time";
 import { toast } from "sonner";
 import { AlertTriangle, CheckCircle2, Loader2, ShieldAlert } from "lucide-react";
 import { useState } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "@/lib/cf-api";
 import { motion } from "framer-motion";
-import type { Id } from "@convex/_generated/dataModel";
+import type { Id } from "@/lib/cf-types";
 
 export default function Issues() {
   const openIssues = useQuery(api.admin.allIssues, { status: "open" });

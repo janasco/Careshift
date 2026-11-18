@@ -26,11 +26,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@convex/_generated/api";
+import { api } from "@/lib/cf-api";
 import { toast } from "sonner";
 import { Activity, HeartPulse, Loader2, Pencil, Plus, Thermometer } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "@/lib/cf-api";
 import { useSearchParams } from "react-router";
 import {
   CartesianGrid,
@@ -42,7 +42,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { Id } from "@convex/_generated/dataModel";
+import type { Id } from "@/lib/cf-types";
 
 type VitalRow = {
   _id: Id<"vitalSigns">;

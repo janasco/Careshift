@@ -18,14 +18,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { api } from "@convex/_generated/api";
+import { api } from "@/lib/cf-api";
 import { formatDateShort, formatTime } from "@/lib/time";
 import { downloadCsv, printTable } from "@/lib/export";
 import { toast } from "sonner";
 import { Download, Loader2, Printer } from "lucide-react";
 import { useState } from "react";
-import { useQuery } from "convex/react";
-import type { Id } from "@convex/_generated/dataModel";
+import { useQuery } from "@/lib/cf-api";
+import type { Id } from "@/lib/cf-types";
 
 function daysAgoStr(n: number) {
   const d = new Date();

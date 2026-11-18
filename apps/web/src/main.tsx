@@ -1,8 +1,7 @@
 import '@vly-ai/integrations';
 import { Toaster } from "@/components/ui/sonner";
 import { VlyToolbar } from "../vly-toolbar-readonly.tsx";
-import { ConvexAuthProvider } from "@convex-dev/auth/react";
-import { ConvexReactClient } from "convex/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React, { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
@@ -64,18 +63,15 @@ class ToolbarErrorBoundary extends React.Component<
   }
 }
 
-const configuredConvexUrl = import.meta.env.VITE_CONVEX_URL as string;
-// In local development the Convex backend listens on 127.0.0.1. When the app is
-// viewed through a forwarded port or another host, route the client through
-// Vite's same-origin proxy (see server.proxy in vite.config.ts) instead.
-const isLocalConvexUrl =
-  import.meta.env.DEV &&
-  configuredConvexUrl != null &&
-  /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(configuredConvexUrl);
-const convexUrl = isLocalConvexUrl
-  ? `${window.location.origin}/convex-api`
-  : configuredConvexUrl;
-const convex = new ConvexReactClient(convexUrl);
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5_000,
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function ServiceWorkerRegistration() {
   useEffect(() => {
@@ -141,14 +137,14 @@ createRoot(document.getElementById("root")!).render(
       <ToolbarErrorBoundary>
         <VlyToolbar />
       </ToolbarErrorBoundary>
-      <ConvexAuthProvider client={convex}>
+      <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <ServiceWorkerRegistration />
           <RouteSyncer />
           <App />
         </BrowserRouter>
         <Toaster />
-      </ConvexAuthProvider>
+      </QueryClientProvider>
     </RootErrorBoundary>
   </StrictMode>,
 );

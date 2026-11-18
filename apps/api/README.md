@@ -78,6 +78,20 @@ exists. Caregiver accounts will be created by admin endpoints in the next phase.
 `TIMEZONE_OFFSET_MINUTES` (default `480` for Asia/Manila) controls how local
 shift times are converted to timestamps during materialization.
 
+## Import existing Convex data
+
+From the repo root, with the Convex dev backend running:
+
+```bash
+IMPORT_TEMP_PASSWORD='a-temporary-password' node apps/api/scripts/import-convex.mjs
+npx wrangler d1 execute careshift --local --config apps/api/wrangler.jsonc \
+  --file /tmp/opencode/careshift-import.sql
+```
+
+Imported users receive the temporary password; reset them from the admin UI
+after cutover. Passwords from Convex Auth cannot be reused because Better Auth
+uses a different password hash.
+
 ## Deploy
 
 ```bash

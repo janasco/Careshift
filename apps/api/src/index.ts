@@ -13,6 +13,9 @@ import medications from "./routes/medications";
 import visits from "./routes/visits";
 import tasks from "./routes/tasks";
 import issues from "./routes/issues";
+import reports from "./routes/reports";
+import timeline from "./routes/timeline";
+import profiles from "./routes/profiles";
 import admin from "./routes/admin";
 import { WorkspaceRoom } from "./realtime";
 
@@ -71,6 +74,9 @@ app.route("/api/medications", medications);
 app.route("/api/visits", visits);
 app.route("/api/tasks", tasks);
 app.route("/api/issues", issues);
+app.route("/api/reports", reports);
+app.route("/api/timeline", timeline);
+app.route("/api/profiles", profiles);
 app.route("/api/admin", admin);
 
 app.get("/api/realtime", async (c) => {

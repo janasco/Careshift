@@ -19,9 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "@/lib/cf-api";
 import { Link } from "react-router";
-import { api } from "@convex/_generated/api";
+import { api } from "@/lib/cf-api";
 import { useSlowClock, useToday } from "@/hooks/use-profile";
 import { formatTime, shiftRangeLabel } from "@/lib/time";
 import { computeStatus } from "@/lib/status";

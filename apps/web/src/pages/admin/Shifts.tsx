@@ -11,15 +11,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { api } from "@convex/_generated/api";
+import { api } from "@/lib/cf-api";
 import { formatHhmmLabel, shiftRangeLabel } from "@/lib/time";
 import { SHIFT_PRESETS } from "@/lib/constants";
 import { ShiftSchema } from "@/lib/schemas";
 import { toast } from "sonner";
 import { Clock, Loader2, MoonStar, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useMutation, useQuery } from "convex/react";
-import type { Id } from "@convex/_generated/dataModel";
+import { useMutation, useQuery } from "@/lib/cf-api";
+import type { Id } from "@/lib/cf-types";
 
 type Shift = {
   _id: Id<"shifts">;
