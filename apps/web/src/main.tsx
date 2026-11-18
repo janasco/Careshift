@@ -1,6 +1,4 @@
-import '@vly-ai/integrations';
 import { Toaster } from "@/components/ui/sonner";
-import { VlyToolbar } from "../vly-toolbar-readonly.tsx";
 import {
   QueryClient,
   QueryClientProvider,
@@ -47,23 +45,6 @@ class RootErrorBoundary extends React.Component<
       );
     }
     return this.props.children;
-  }
-}
-
-/** Silent error boundary — if VlyToolbar crashes it renders nothing. */
-class ToolbarErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean }
-> {
-  state = { hasError: false };
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-  componentDidCatch(err: Error) {
-    console.warn("[VlyToolbar] Caught error, toolbar disabled:", err.message);
-  }
-  render() {
-    return this.state.hasError ? null : this.props.children;
   }
 }
 
@@ -172,9 +153,6 @@ function RealtimeSync() {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <RootErrorBoundary>
-      <ToolbarErrorBoundary>
-        <VlyToolbar />
-      </ToolbarErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <ServiceWorkerRegistration />
