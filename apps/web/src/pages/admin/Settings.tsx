@@ -1,9 +1,12 @@
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { api, useMutation } from "@/lib/cf-api";
+import { authClient } from "@/lib/auth-client";
 import { useAuth } from "@/hooks/use-auth";
-import { AlertTriangle, DatabaseZap, ListChecks, Loader2, ShieldCheck } from "lucide-react";
+import { AlertTriangle, DatabaseZap, KeyRound, ListChecks, Loader2, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -15,6 +18,42 @@ export default function Settings() {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    current: "",
+    next: "",
+    confirm: "",
+  });
+  const [passwordBusy, setPasswordBusy] = useState(false);
+
+  const changePassword = async () => {
+    if (passwordForm.next.length < 8) {
+      toast.error("The new password must be at least 8 characters.");
+      return;
+    }
+    if (passwordForm.next !== passwordForm.confirm) {
+      toast.error("The new passwords do not match.");
+      return;
+    }
+    setPasswordBusy(true);
+    try {
+      const result = await authClient.changePassword({
+        currentPassword: passwordForm.current,
+        newPassword: passwordForm.next,
+        revokeOtherSessions: true,
+      });
+      if (result.error) {
+        throw new Error(result.error.message ?? "Could not change password");
+      }
+      toast.success("Password changed");
+      setPasswordForm({ current: "", next: "", confirm: "" });
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Could not change password",
+      );
+    } finally {
+      setPasswordBusy(false);
+    }
+  };
 
   const runSeedTemplates = async () => {
     setBusy(true);
@@ -50,6 +89,61 @@ export default function Settings() {
   return (
     <AppShell role="admin" title="Settings" subtitle="Configure your workspace">
       <div className="grid gap-4 lg:grid-cols-2">
+        <Card className="card-layer border-border/70 lg:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <KeyRound className="size-4 text-muted-foreground" /> Change your password
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-3 sm:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="current-password">Current password</Label>
+              <Input
+                id="current-password"
+                type="password"
+                value={passwordForm.current}
+                onChange={(e) =>
+                  setPasswordForm({ ...passwordForm, current: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="new-password">New password</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={passwordForm.next}
+                onChange={(e) =>
+                  setPasswordForm({ ...passwordForm, next: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="confirm-password">Confirm new password</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={passwordForm.confirm}
+                onChange={(e) =>
+                  setPasswordForm({ ...passwordForm, confirm: e.target.value })
+                }
+              />
+            </div>
+            <div className="sm:col-span-3">
+              <Button
+                onClick={changePassword}
+                disabled={passwordBusy}
+                className="cursor-pointer"
+              >
+                {passwordBusy && (
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                )}
+                Update password
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card className="card-layer border-border/70">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
