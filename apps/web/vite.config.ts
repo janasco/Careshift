@@ -109,6 +109,12 @@ export default defineConfig({
     // Proxy the local Convex backend through Vite so a single forwarded port
     // (5173) is enough for the app and its websocket in a remote container.
     proxy: {
+      // New Cloudflare Workers API (local wrangler dev).
+      "/api": {
+        target: "http://127.0.0.1:8787",
+        changeOrigin: true,
+        ws: true,
+      },
       "/convex-api": {
         target: "http://127.0.0.1:3210",
         changeOrigin: true,

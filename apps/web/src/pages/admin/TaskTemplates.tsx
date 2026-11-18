@@ -20,15 +20,15 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@convex/_generated/api";
+import { api } from "@/lib/cf-api";
 import { CATEGORIES, PRIORITIES } from "@/lib/constants";
 import { TaskSchema } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Loader2, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
-import { useMutation, useQuery } from "convex/react";
-import type { Doc, Id } from "@convex/_generated/dataModel";
+import { useMutation, useQuery } from "@/lib/cf-api";
+import type { Doc, Id } from "@/lib/cf-types";
 
 type Template = Doc<"taskTemplates">;
 

@@ -1,9 +1,8 @@
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { api } from "@convex/_generated/api";
-import { useMutation } from "convex/react";
-import { useAuthActions } from "@convex-dev/auth/react";
+import { api, useMutation } from "@/lib/cf-api";
+import { useAuth } from "@/hooks/use-auth";
 import { AlertTriangle, DatabaseZap, ListChecks, Loader2, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
@@ -12,7 +11,7 @@ import { toast } from "sonner";
 export default function Settings() {
   const reset = useMutation(api.bootstrap.resetWorkspace);
   const seedTemplates = useMutation(api.bootstrap.seedStarterTemplates);
-  const { signOut } = useAuthActions();
+  const { signOut } = useAuth();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);

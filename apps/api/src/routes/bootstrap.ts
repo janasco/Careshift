@@ -2,13 +2,34 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
-import { profiles, shifts, user } from "@careshift/db";
+import {
+  account,
+  assignments,
+  auditLogs,
+  careEvents,
+  caregivers,
+  issues,
+  medicationLogs,
+  medications,
+  patients,
+  profiles,
+  scheduledTasks,
+  session,
+  shifts,
+  taskCompletions,
+  taskTemplates,
+  user,
+  verification,
+  visits,
+  vitalSigns,
+} from "@careshift/db";
 import { SHIFT_PRESETS } from "@careshift/shared";
 import { createAuth } from "../auth";
 import { getDb } from "../db";
-import type { Bindings } from "../env";
+import { requireAdmin, requireUser } from "../middleware/auth";
+import type { Bindings, Variables } from "../env";
 
-const app = new Hono<{ Bindings: Bindings }>();
+const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 const setupSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
@@ -93,6 +114,99 @@ app.post("/admin", zValidator("json", setupSchema), async (c) => {
       400,
     );
   }
+});
+
+const STARTER_TEMPLATES = [
+  { name: "Assist with bathing", category: "Personal Care", priority: "high", estimatedDuration: 45, required: true, description: "Assist with shower or bed bath per care plan" },
+  { name: "Assist with dressing", category: "Personal Care", priority: "high", estimatedDuration: 30, required: true, description: "Help select and put on weather-appropriate clothing" },
+  { name: "Oral hygiene", category: "Personal Care", priority: "medium", estimatedDuration: 15, required: true, description: "Brushing, denture care, mouth rinse" },
+  { name: "Grooming", category: "Personal Care", priority: "low", estimatedDuration: 15, required: false, description: "Hair care, shaving, nail care as tolerated" },
+  { name: "Check medication schedule", category: "Medication", priority: "high", estimatedDuration: 15, required: true, description: "Verify schedule and prepare doses" },
+  { name: "Assist with medication", category: "Medication", priority: "high", estimatedDuration: 20, required: true, description: "Administer or prompt per medication plan" },
+  { name: "Record medication observation", category: "Medication", priority: "medium", estimatedDuration: 10, required: true, description: "Note side effects, refusals, or concerns" },
+  { name: "Prepare breakfast", category: "Meals", priority: "high", estimatedDuration: 30, required: true, description: "Prepare morning meal per dietary plan" },
+  { name: "Prepare lunch", category: "Meals", priority: "high", estimatedDuration: 40, required: true, description: "Prepare and serve midday meal" },
+  { name: "Prepare dinner", category: "Meals", priority: "high", estimatedDuration: 45, required: true, description: "Prepare and serve evening meal" },
+  { name: "Record meal intake", category: "Meals", priority: "medium", estimatedDuration: 10, required: true, description: "Record appetite and intake percentage" },
+  { name: "Clean room", category: "Housekeeping", priority: "low", estimatedDuration: 30, required: false, description: "Tidy and sanitize living area" },
+  { name: "Change bed sheets", category: "Housekeeping", priority: "low", estimatedDuration: 20, required: false, description: "Strip and remake bed with fresh linens" },
+  { name: "Laundry", category: "Housekeeping", priority: "low", estimatedDuration: 40, required: false, description: "Wash, dry, fold, and put away" },
+  { name: "Organize personal items", category: "Housekeeping", priority: "low", estimatedDuration: 20, required: false, description: "Keep belongings accessible and ordered" },
+  { name: "Check vital signs", category: "Monitoring", priority: "high", estimatedDuration: 15, required: true, description: "Temperature, pulse, blood pressure" },
+  { name: "Check hydration", category: "Monitoring", priority: "medium", estimatedDuration: 10, required: true, description: "Offer water and record intake" },
+  { name: "Check mobility", category: "Monitoring", priority: "medium", estimatedDuration: 15, required: true, description: "Safe walking, transfers, fall risk" },
+  { name: "Record observations", category: "Monitoring", priority: "low", estimatedDuration: 10, required: true, description: "General wellbeing and behavior notes" },
+] as const;
+
+app.post("/seed-templates", requireUser, requireAdmin, async (c) => {
+  const db = getDb(c.env);
+  const existing = new Set(
+    (await db.select({ name: taskTemplates.name }).from(taskTemplates)).map(
+      (row) => row.name,
+    ),
+  );
+  let added = 0;
+  let skipped = 0;
+
+  for (const template of STARTER_TEMPLATES) {
+    if (existing.has(template.name)) {
+      skipped += 1;
+      continue;
+    }
+    await db.insert(taskTemplates).values({
+      id: crypto.randomUUID(),
+      name: template.name,
+      description: template.description,
+      category: template.category,
+      priority: template.priority,
+      estimatedDuration: template.estimatedDuration,
+      required: template.required,
+      recurring: true,
+      active: true,
+      createdAt: Date.now(),
+    });
+    added += 1;
+  }
+
+  return c.json({ added, skipped });
+});
+
+app.post("/reset", requireUser, requireAdmin, async (c) => {
+  const db = getDb(c.env);
+
+  await db.delete(taskCompletions);
+  await db.delete(issues);
+  await db.delete(scheduledTasks);
+  await db.delete(assignments);
+  await db.delete(medicationLogs);
+  await db.delete(medications);
+  await db.delete(careEvents);
+  await db.delete(vitalSigns);
+  await db.delete(visits);
+  await db.delete(caregivers);
+  await db.delete(profiles);
+  await db.delete(taskTemplates);
+  await db.delete(patients);
+  await db.delete(auditLogs);
+  await db.delete(account);
+  await db.delete(session);
+  await db.delete(verification);
+  await db.delete(user);
+  await db.delete(shifts);
+
+  const now = Date.now();
+  await db.insert(shifts).values(
+    SHIFT_PRESETS.map((preset) => ({
+      id: crypto.randomUUID(),
+      name: preset.name,
+      startTime: preset.start,
+      endTime: preset.end,
+      active: true,
+      createdAt: now,
+    })),
+  );
+
+  return c.json({ reset: true });
 });
 
 export default app;

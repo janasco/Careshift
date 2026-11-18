@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as Location from "expo-location";
 import { useEffect, useState } from "react";
 import {
@@ -14,10 +14,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { formatDuration, todayStr } from "@careshift/shared";
 
-import { api, type Id } from "@/lib/convex";
+import { apiGet, apiPost } from "@/lib/api";
 
 type Visit = {
-  _id: Id<"visits">;
+  _id: string;
   date: string;
   clockInAt: number;
   clockInLat?: number;
@@ -47,12 +47,22 @@ async function getLocation() {
 
 export default function VisitScreen() {
   const today = todayStr();
-  const visit = useQuery(api.visits.myVisitForDate, { date: today }) as
-    | Visit
-    | null
-    | undefined;
-  const clockIn = useMutation(api.visits.clockIn);
-  const clockOut = useMutation(api.visits.clockOut);
+  const queryClient = useQueryClient();
+  const visitQuery = useQuery({
+    queryKey: ["visit", today],
+    queryFn: () => apiGet<Visit | null>(`/api/visits/today?date=${today}`),
+  });
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: ["visit", today] });
+  const clockIn = useMutation({
+    mutationFn: (body: any) => apiPost("/api/visits/clock-in", body),
+    onSuccess: invalidate,
+  });
+  const clockOut = useMutation({
+    mutationFn: (body: any) => apiPost("/api/visits/clock-out", body),
+    onSuccess: invalidate,
+  });
+  const visit = visitQuery.data;
   const [busy, setBusy] = useState(false);
   const [notes, setNotes] = useState("");
   const [now, setNow] = useState(Date.now());
@@ -66,7 +76,7 @@ export default function VisitScreen() {
     setBusy(true);
     try {
       const location = await getLocation();
-      await clockIn({ date: today, ...location });
+      await clockIn.mutateAsync({ date: today, ...location });
       Alert.alert(
         "Clocked in",
         location.lat != null
@@ -88,7 +98,7 @@ export default function VisitScreen() {
     setBusy(true);
     try {
       const location = await getLocation();
-      const result = await clockOut({
+      const result = await clockOut.mutateAsync({
         visitId: visit._id,
         date: visit.date,
         notes: notes.trim() || undefined,
@@ -106,7 +116,7 @@ export default function VisitScreen() {
     }
   };
 
-  if (visit === undefined) {
+  if (visitQuery.isLoading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#0f766e" />

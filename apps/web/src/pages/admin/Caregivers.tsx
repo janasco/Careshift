@@ -28,7 +28,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api } from "@convex/_generated/api";
+import { api } from "@/lib/cf-api";
 import { useAuth } from "@/hooks/use-auth";
 import { useToday } from "@/hooks/use-profile";
 import { formatDateShort, formatTime } from "@/lib/time";
@@ -36,9 +36,9 @@ import { CaregiverSchema } from "@/lib/schemas";
 import { toast } from "sonner";
 import { CalendarClock, KeyRound, Loader2, Plus, UserRoundCog } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "@/lib/cf-api";
 import { Link, useSearchParams } from "react-router";
-import type { Id } from "@convex/_generated/dataModel";
+import type { Id } from "@/lib/cf-types";
 
 type Directory = {
   _id: Id<"caregivers">;

@@ -1,11 +1,12 @@
 import { Redirect } from "expo-router";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
-import { useConvexAuth } from "convex/react";
+
+import { authClient } from "@/lib/api";
 
 export default function Index() {
-  const { isAuthenticated, isLoading } = useConvexAuth();
+  const { data: session, isPending } = authClient.useSession();
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#0f766e" />
@@ -14,7 +15,7 @@ export default function Index() {
   }
 
   return (
-    <Redirect href={isAuthenticated ? "/(app)/checklist" : "/(auth)/sign-in"} />
+    <Redirect href={session ? "/(app)/checklist" : "/(auth)/sign-in"} />
   );
 }
 

@@ -1,6 +1,6 @@
 # CareShift Mobile (Expo)
 
-Caregiver app for Android/iOS. It talks to the same Convex backend as the web app.
+Caregiver app for Android/iOS. It talks to the Cloudflare Workers API.
 
 ## Run locally
 
@@ -8,26 +8,24 @@ From the repository root:
 
 ```bash
 npm install
-npm run convex:dev        # keep running
-npm run dev:mobile        # in a second terminal
+npm run db:migrate:local   # first run only
+npm run dev:api            # keep running, http://localhost:8787
+npm run dev:mobile         # in a second terminal
 ```
 
-Set the Convex URL in `apps/mobile/.env.local`:
+Set the API URL in `apps/mobile/.env.local`:
 
 ```bash
-EXPO_PUBLIC_CONVEX_URL=http://YOUR_LAN_IP:3210
+EXPO_PUBLIC_API_URL=http://YOUR_LAN_IP:8787
 ```
 
-The phone and the machine running Convex must be on the same network. Scan the
+The phone and the machine running the API must be on the same network. Scan the
 QR code with Expo Go, or press `a` to start an Android emulator.
 
 ## Sign in
 
-Use a caregiver account created by the admin, for example:
-
-- `caregiver1@example.com`
-- `caregiver2@example.com`
-- `caregiver3@example.com`
+Use a caregiver account created by the admin. Imported accounts use the
+temporary password from the Convex migration and should be reset afterward.
 
 Admin accounts are intentionally redirected to the website.
 
@@ -37,5 +35,4 @@ Admin accounts are intentionally redirected to the website.
 - **Visit** — GPS clock-in/out, live visit timer, handover notes
 - **Profile** — account info and sign out
 
-Medication confirmation and care-event entry are next; the web app remains the
-admin surface for patients, staff, shifts, medications, reports, and the audit log.
+Medication confirmation and care-event entry are next.

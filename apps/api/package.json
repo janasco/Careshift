@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.7.25",
+    "@better-auth/expo": "^1.7.25",
     "@careshift/db": "*",
     "@careshift/shared": "*",
     "@hono/zod-validator": "^0.9.1",

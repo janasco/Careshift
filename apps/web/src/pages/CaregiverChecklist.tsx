@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { api } from "@convex/_generated/api";
+import { api } from "@/lib/cf-api";
 import { useAuth } from "@/hooks/use-auth";
 import { useSlowClock, useProfile, useToday } from "@/hooks/use-profile";
 import { useOfflineQueue } from "@/hooks/use-offline-queue";
@@ -46,9 +46,9 @@ import {
   StickyNote,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "@/lib/cf-api";
 import { useNavigate } from "react-router";
-import type { Id } from "@convex/_generated/dataModel";
+import type { Id } from "@/lib/cf-types";
 
 type Task = {
   _id: Id<"scheduledTasks">;

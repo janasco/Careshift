@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { api } from "@convex/_generated/api";
+import { api } from "@/lib/cf-api";
 import { AssignmentSchema } from "@/lib/schemas";
 import { formatHhmmLabel } from "@/lib/time";
 import { cn } from "@/lib/utils";
@@ -26,8 +26,8 @@ import { toast } from "sonner";
 import { Link } from "react-router";
 import { CalendarClock, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
-import { useMutation, useQuery } from "convex/react";
-import type { Id } from "@convex/_generated/dataModel";
+import { useMutation, useQuery } from "@/lib/cf-api";
+import type { Id } from "@/lib/cf-types";
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 

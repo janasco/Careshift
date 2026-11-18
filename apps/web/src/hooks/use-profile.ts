@@ -1,7 +1,6 @@
-import { useQuery } from "convex/react";
-import { api } from "@convex/_generated/api";
 import { useEffect, useState } from "react";
 import { dateStrFrom } from "@/lib/time";
+import { api, useQuery } from "@/lib/cf-api";
 
 /** Signed-in user's app profile (role, name, shift). */
 export function useProfile() {

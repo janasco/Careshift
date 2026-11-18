@@ -5,8 +5,8 @@ import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/use-auth";
 import { useSlowClock, useProfile, useToday } from "@/hooks/use-profile";
 import { useMaterializeDay } from "@/hooks/use-materialize-day";
-import { api } from "@convex/_generated/api";
-import { useQuery } from "convex/react";
+import { api } from "@/lib/cf-api";
+import { useQuery } from "@/lib/cf-api";
 import { formatDateLong, formatTime, shiftRangeLabel } from "@/lib/time";
 import {
   AlertTriangle,

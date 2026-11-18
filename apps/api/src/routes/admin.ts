@@ -1,10 +1,9 @@
 import { Hono } from "hono";
-import { and, count, desc, eq, gte, lte, type SQL } from "drizzle-orm";
+import { and, desc, eq, gte, lt, lte, type SQL } from "drizzle-orm";
 import {
   auditLogs,
   caregivers,
   issues,
-  patients,
   profiles,
   scheduledTasks,
   shifts,
@@ -27,63 +26,115 @@ app.get("/summary", async (c) => {
   }
 
   const db = getDb(c.env);
-  const [totalTasks, completed, completedWithIssue, pending, openIssues, activeCaregivers, activeVisits, patientCount] =
-    await Promise.all([
-      db
-        .select({ value: count() })
-        .from(scheduledTasks)
-        .where(eq(scheduledTasks.date, date)),
-      db
-        .select({ value: count() })
-        .from(scheduledTasks)
-        .where(
-          and(
-            eq(scheduledTasks.date, date),
-            eq(scheduledTasks.status, "completed"),
-          ),
-        ),
-      db
-        .select({ value: count() })
-        .from(scheduledTasks)
-        .where(
-          and(
-            eq(scheduledTasks.date, date),
-            eq(scheduledTasks.status, "completed_with_issue"),
-          ),
-        ),
-      db
-        .select({ value: count() })
-        .from(scheduledTasks)
-        .where(
-          and(
-            eq(scheduledTasks.date, date),
-            eq(scheduledTasks.status, "pending"),
-          ),
-        ),
-      db
-        .select({ value: count() })
-        .from(issues)
-        .where(eq(issues.status, "open")),
-      db
-        .select({ value: count() })
-        .from(caregivers)
-        .where(eq(caregivers.status, "active")),
-      db
-        .select({ value: count() })
-        .from(visits)
-        .where(eq(visits.status, "active")),
-      db.select({ value: count() }).from(patients),
-    ]);
+  const now = Date.now();
+  const tasks = await db
+    .select()
+    .from(scheduledTasks)
+    .where(eq(scheduledTasks.date, date));
+  const caregiverRows = await db
+    .select()
+    .from(caregivers)
+    .where(eq(caregivers.status, "active"));
+  const profileRows = await db.select().from(profiles);
+  const shiftRows = await db.select().from(shifts);
+  const templateRows = await db.select().from(taskTemplates);
+  const issueRows = await db
+    .select()
+    .from(issues)
+    .where(eq(issues.status, "open"));
+
+  const completed = tasks.filter((task) => task.status === "completed").length;
+  const withIssue = tasks.filter(
+    (task) => task.status === "completed_with_issue",
+  ).length;
+  const pending = tasks.filter(
+    (task) => task.status === "pending" && task.dueMs >= now,
+  ).length;
+  const overdue = tasks.filter(
+    (task) => task.status === "pending" && task.dueMs < now,
+  ).length;
+  const todayIssues = issueRows.filter((issue) =>
+    tasks.some((task) => task.id === issue.scheduledTaskId),
+  ).length;
+
+  const caregiverStatus = caregiverRows
+    .map((caregiver) => {
+      const profile = profileRows.find((row) => row.userId === caregiver.userId);
+      const shift = shiftRows.find((row) => row.id === caregiver.shiftId);
+      const list = tasks.filter((task) => task.caregiverId === caregiver.id);
+      const cgCompleted = list.filter((task) => task.status === "completed").length;
+      const cgIssue = list.filter(
+        (task) => task.status === "completed_with_issue",
+      ).length;
+      const cgPending = list.filter(
+        (task) => task.status === "pending" && task.dueMs >= now,
+      ).length;
+      const cgOverdue = list.filter(
+        (task) => task.status === "pending" && task.dueMs < now,
+      ).length;
+      const shiftStartMs = list[0]?.shiftStartMs ?? null;
+      const shiftEndMs = list[0]?.shiftEndMs ?? null;
+
+      let liveStatus: "completed" | "working" | "pending" | "overdue" | "upcoming" =
+        "upcoming";
+      if (shiftStartMs && shiftEndMs) {
+        if (now < shiftStartMs) liveStatus = "upcoming";
+        else if (now >= shiftEndMs) {
+          liveStatus =
+            list.length > 0 && cgCompleted + cgIssue === list.length
+              ? "completed"
+              : "overdue";
+        } else liveStatus = cgOverdue > 0 ? "overdue" : "working";
+      }
+
+      return {
+        caregiverId: caregiver.id,
+        name: profile?.fullName ?? "Caregiver",
+        shiftName: shift?.name ?? "No shift",
+        shiftStart: shift?.startTime,
+        shiftEnd: shift?.endTime,
+        completed: cgCompleted,
+        withIssue: cgIssue,
+        pending: cgPending,
+        overdue: cgOverdue,
+        total: list.length,
+        liveStatus,
+      };
+    })
+    .sort((a, b) =>
+      (a.shiftStart ?? "99") < (b.shiftStart ?? "99") ? -1 : 1,
+    );
+
+  const shiftBreakdown = shiftRows
+    .filter((shift) => shift.active)
+    .map((shift) => {
+      const list = tasks.filter((task) => task.shiftId === shift.id);
+      const done = list.filter((task) => task.status === "completed").length;
+      return {
+        shiftId: shift.id,
+        name: shift.name,
+        total: list.length,
+        completed: done,
+        rate: list.length ? Math.round((done / list.length) * 100) : 0,
+      };
+    });
 
   return c.json({
-    totalTasks: totalTasks[0]?.value ?? 0,
-    completed: completed[0]?.value ?? 0,
-    completedWithIssue: completedWithIssue[0]?.value ?? 0,
-    pending: pending[0]?.value ?? 0,
-    openIssues: openIssues[0]?.value ?? 0,
-    activeCaregivers: activeCaregivers[0]?.value ?? 0,
-    activeVisits: activeVisits[0]?.value ?? 0,
-    patients: patientCount[0]?.value ?? 0,
+    date,
+    now,
+    totalCaregivers: caregiverRows.length,
+    totalTasks: tasks.length,
+    completed,
+    withIssue,
+    pending,
+    overdue,
+    issues: todayIssues,
+    completionRate: tasks.length
+      ? Math.round((completed / tasks.length) * 100)
+      : 0,
+    templatesCount: templateRows.length,
+    caregiverStatus,
+    shiftBreakdown,
   });
 });
 
@@ -99,9 +150,21 @@ app.get("/history", async (c) => {
     lte(scheduledTasks.date, toDate),
   ];
   const caregiverId = c.req.query("caregiverId");
+  const shiftId = c.req.query("shiftId");
+  const templateId = c.req.query("templateId");
   const status = c.req.query("status");
+  const now = Date.now();
   if (caregiverId) conditions.push(eq(scheduledTasks.caregiverId, caregiverId));
-  if (status) conditions.push(eq(scheduledTasks.status, status));
+  if (shiftId) conditions.push(eq(scheduledTasks.shiftId, shiftId));
+  if (templateId) conditions.push(eq(scheduledTasks.templateId, templateId));
+  if (status === "overdue") {
+    conditions.push(eq(scheduledTasks.status, "pending"));
+    conditions.push(lt(scheduledTasks.dueMs, now));
+  } else if (status === "issue") {
+    conditions.push(eq(scheduledTasks.status, "completed_with_issue"));
+  } else if (status && status !== "all") {
+    conditions.push(eq(scheduledTasks.status, status));
+  }
 
   const db = getDb(c.env);
   const rows = await db
@@ -110,6 +173,7 @@ app.get("/history", async (c) => {
       date: scheduledTasks.date,
       scheduledTime: scheduledTasks.scheduledTime,
       status: scheduledTasks.status,
+      dueMs: scheduledTasks.dueMs,
       completedAt: scheduledTasks.completedAt,
       note: scheduledTasks.note,
       taskName: taskTemplates.name,
@@ -127,7 +191,12 @@ app.get("/history", async (c) => {
     .where(and(...conditions))
     .orderBy(desc(scheduledTasks.date), desc(scheduledTasks.scheduledTime));
 
-  return c.json(rows);
+  return c.json(
+    rows.map((row) => ({
+      ...row,
+      overdue: row.status === "pending" && row.dueMs < now,
+    })),
+  );
 });
 
 app.get("/audit", async (c) => {

@@ -27,14 +27,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@convex/_generated/api";
+import { api } from "@/lib/cf-api";
 import { CARE_EVENT_SEVERITIES, CARE_EVENT_TYPES } from "@/lib/care-events";
 import { toast } from "sonner";
 import { Loader2, NotebookPen, Pencil, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "@/lib/cf-api";
 import { useSearchParams } from "react-router";
-import type { Id } from "@convex/_generated/dataModel";
+import type { Id } from "@/lib/cf-types";
 
 type CareEventRow = {
   _id: Id<"careEvents">;

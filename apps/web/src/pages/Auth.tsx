@@ -12,11 +12,10 @@ import { Label } from "@/components/ui/label";
 
 import { useAuth } from "@/hooks/use-auth";
 import logo from "@/assets/logo.svg";
-import { api } from "@convex/_generated/api";
+import { api, useMutation, useQuery } from "@/lib/cf-api";
 import { ArrowRight, Loader2, Lock, Mail, ShieldCheck } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 
 interface AuthProps {

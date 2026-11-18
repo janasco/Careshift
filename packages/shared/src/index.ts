@@ -47,7 +47,15 @@ export const CARE_EVENT_SEVERITIES = [
 export type CareEventSeverity = (typeof CARE_EVENT_SEVERITIES)[number]["value"];
 
 export type UserRole = "admin" | "caregiver";
+export type AppRole = UserRole;
 export type VisitStatus = "active" | "completed";
+
+export function dateStrFrom(ms: number) {
+  const date = new Date(ms);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+    date.getDate(),
+  ).padStart(2, "0")}`;
+}
 
 export function todayStr(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(

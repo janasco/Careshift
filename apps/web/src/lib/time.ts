@@ -1,4 +1,4 @@
-import { dateStrFrom } from "@convex/shared";
+import { dateStrFrom } from "@careshift/shared";
 import { format } from "date-fns";
 
 export { dateStrFrom };

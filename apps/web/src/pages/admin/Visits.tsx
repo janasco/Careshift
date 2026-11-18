@@ -11,13 +11,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { api } from "@convex/_generated/api";
+import { api } from "@/lib/cf-api";
 import { useToday } from "@/hooks/use-profile";
 import { formatTime } from "@/lib/time";
 import { Loader2, MapPin, Navigation } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useQuery } from "convex/react";
-import type { Id } from "@convex/_generated/dataModel";
+import { useQuery } from "@/lib/cf-api";
+import type { Id } from "@/lib/cf-types";
 
 type Visit = {
   _id: Id<"visits">;
