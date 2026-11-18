@@ -17,6 +17,12 @@
     "android": "npm --workspace @careshift/mobile run android",
     "ios": "npm --workspace @careshift/mobile run ios",
     "typecheck:mobile": "npm --workspace @careshift/mobile run typecheck",
+    "dev:api": "npm --workspace @careshift/api run dev",
+    "typecheck:api": "npm --workspace @careshift/api run typecheck",
+    "deploy:api": "npm --workspace @careshift/api run deploy",
+    "db:generate": "npm --workspace @careshift/db run generate",
+    "db:migrate:local": "npm --workspace @careshift/db run migrate:local",
+    "db:migrate:remote": "npm --workspace @careshift/db run migrate:remote",
     "convex:dev": "convex dev",
     "convex:once": "convex dev --once"
   },
