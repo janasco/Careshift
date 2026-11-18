@@ -16,7 +16,7 @@ import { formatHhmmLabel, shiftRangeLabel } from "@/lib/time";
 import { SHIFT_PRESETS } from "@/lib/constants";
 import { ShiftSchema } from "@/lib/schemas";
 import { toast } from "sonner";
-import { Clock, Loader2, MoonStar, Pencil, Plus } from "lucide-react";
+import { Clock, Loader2, MoonStar, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -34,12 +34,15 @@ export default function Shifts() {
   const caregivers = useQuery(api.admin.caregiverDirectory);
   const upsert = useMutation(api.shifts.upsertShift);
   const setActive = useMutation(api.shifts.setShiftActive);
+  const deleteShift = useMutation(api.shifts.deleteShift);
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Shift | null>(null);
   const [form, setForm] = useState({ name: "", startTime: "06:00", endTime: "14:00", active: true });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Shift | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const openNew = () => {
     setEditing(null);
@@ -85,6 +88,20 @@ export default function Shifts() {
       toast.success(`${s.name} ${s.active ? "deactivated" : "activated"}`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Update failed");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await deleteShift({ id: deleteTarget._id });
+      toast.success(`${deleteTarget.name} deleted`);
+      setDeleteTarget(null);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Delete failed");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -136,9 +153,20 @@ export default function Shifts() {
                       <Switch checked={s.active} onCheckedChange={() => handleToggle(s)} />
                       {s.active ? "Active" : "Inactive"}
                     </div>
-                    <Button variant="outline" size="sm" className="cursor-pointer" onClick={() => openEdit(s)}>
-                      <Pencil className="mr-1 size-3.5" /> Edit
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button variant="outline" size="sm" className="cursor-pointer" onClick={() => openEdit(s)}>
+                        <Pencil className="mr-1 size-3.5" /> Edit
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 cursor-pointer text-muted-foreground hover:text-destructive"
+                        aria-label={`Delete ${s.name}`}
+                        onClick={() => setDeleteTarget(s)}
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -222,6 +250,44 @@ export default function Shifts() {
           <DialogFooter>
             <Button onClick={handleSave} disabled={saving} className="cursor-pointer">
               {saving && <Loader2 className="mr-2 size-4 animate-spin" />} Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete shift?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Delete <span className="font-medium text-foreground">{deleteTarget?.name}</span>?
+            This cannot be undone. If caregivers, assignments, scheduled tasks, or visits
+            reference this shift, deletion will be blocked — deactivate it instead.
+          </p>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              className="cursor-pointer"
+              onClick={() => setDeleteTarget(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              className="cursor-pointer"
+              disabled={deleting}
+              onClick={handleDelete}
+            >
+              {deleting ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : (
+                <Trash2 className="mr-2 size-4" />
+              )}
+              Delete shift
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -125,7 +125,8 @@ const schema = defineSchema(
       .index("by_date", ["date"])
       .index("by_caregiverId_date", ["caregiverId", "date"])
       .index("by_assignmentId_date", ["assignmentId", "date"])
-      .index("by_status_date", ["status", "date"]),
+      .index("by_status_date", ["status", "date"])
+      .index("by_shiftId", ["shiftId"]),
 
     taskCompletions: defineTable({
       scheduledTaskId: v.id("scheduledTasks"),
@@ -252,7 +253,8 @@ const schema = defineSchema(
       .index("by_date", ["date"])
       .index("by_caregiverId", ["caregiverId"])
       .index("by_caregiverId_date", ["caregiverId", "date"])
-      .index("by_status", ["status"]),
+      .index("by_status", ["status"])
+      .index("by_shiftId", ["shiftId"]),
 
     auditLogs: defineTable({
       userId: v.optional(v.id("users")),
