@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Careshift",
+    "slug": "careshift",
+    "version": "0.1.0",
+    "scheme": "careshift",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Careshift to record your location when you clock in and out."
+        }
+      ],
+      "expo-status-bar"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.apexsinc.careshift"
+    },
+    "android": {
+      "package": "com.apexsinc.careshift"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    }
+  }
+}

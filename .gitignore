@@ -1,5 +1,11 @@
-.env.local
 node_modules
 dist
-src/convex/_generated
 .env
+.env.local
+convex/_generated
+.vite
+.expo
+apps/mobile/.expo
+apps/mobile/android
+apps/mobile/ios
+.turbo
