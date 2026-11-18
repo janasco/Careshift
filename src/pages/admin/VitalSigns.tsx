@@ -1,6 +1,6 @@
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -28,13 +28,25 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
-import { HeartPulse, Loader2, Pencil, Plus } from "lucide-react";
+import { Activity, HeartPulse, Loader2, Pencil, Plus, Thermometer } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
+import { useSearchParams } from "react-router";
+import {
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import type { Id } from "@/convex/_generated/dataModel";
 
 type VitalRow = {
   _id: Id<"vitalSigns">;
+  patientId?: Id<"patients">;
   patientName?: string;
   caregiverId?: Id<"caregivers">;
   caregiverName?: string;
@@ -49,14 +61,11 @@ type VitalRow = {
   createdAt: number;
 };
 
-type Caregiver = {
-  _id: Id<"caregivers">;
-  fullName: string;
-  status: string;
-};
+type Patient = { _id: Id<"patients">; fullName: string; status: string };
+type Caregiver = { _id: Id<"caregivers">; fullName: string; status: string };
 
 type Form = {
-  patientName: string;
+  patientId: string;
   caregiverId: string;
   timeLabel: string;
   bp: string;
@@ -68,7 +77,7 @@ type Form = {
 };
 
 const emptyForm: Form = {
-  patientName: "",
+  patientId: "",
   caregiverId: "",
   timeLabel: "",
   bp: "",
@@ -78,8 +87,6 @@ const emptyForm: Form = {
   temperature: "",
   notes: "",
 };
-
-const PATIENTS = ["All patients", "Sir Shelly", "Sir Shannon", "Unspecified"];
 
 function numberOrUndefined(value: string) {
   if (!value.trim()) return undefined;
@@ -92,13 +99,35 @@ function reportedLabel(row: VitalRow) {
   return row.timeLabel || "Time not provided";
 }
 
+function parseBp(value?: string) {
+  const match = value?.match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
+  return match ? { systolic: Number(match[1]), diastolic: Number(match[2]) } : null;
+}
+
+function parseTemperature(value?: string) {
+  const match = value?.match(/(\d{2}(?:\.\d+)?)/);
+  return match ? Number(match[1]) : null;
+}
+
+const CHART_COLORS = {
+  systolic: "#dc2626",
+  diastolic: "#0ea5e9",
+  spo2: "#10b981",
+  pulse: "#f59e0b",
+  temperature: "#8b5cf6",
+};
+
 export default function VitalSigns() {
+  const [searchParams] = useSearchParams();
   const rows = useQuery(api.vitals.listVitalSigns) as VitalRow[] | undefined;
+  const patients = useQuery(api.patients.listPatients) as Patient[] | undefined;
   const caregivers = useQuery(api.admin.caregiverDirectory) as Caregiver[] | undefined;
   const createVitalSign = useMutation(api.vitals.createVitalSign);
   const updateVitalSign = useMutation(api.vitals.updateVitalSign);
 
-  const [patientFilter, setPatientFilter] = useState("All patients");
+  const [patientFilter, setPatientFilter] = useState(
+    () => searchParams.get("patient") ?? "all",
+  );
   const [caregiverFilter, setCaregiverFilter] = useState("all");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<VitalRow | null>(null);
@@ -107,29 +136,70 @@ export default function VitalSigns() {
 
   const filtered = useMemo(() => {
     return (rows ?? []).filter((row) => {
-      const patient = row.patientName ?? "Unspecified";
-      if (patientFilter !== "All patients" && patient !== patientFilter) return false;
+      if (patientFilter === "unassigned" && row.patientId) return false;
+      if (
+        patientFilter !== "all" &&
+        patientFilter !== "unassigned" &&
+        row.patientId !== patientFilter
+      ) {
+        return false;
+      }
       if (caregiverFilter === "unassigned" && row.caregiverId) return false;
-      if (caregiverFilter !== "all" && caregiverFilter !== "unassigned" && row.caregiverId !== caregiverFilter) {
+      if (
+        caregiverFilter !== "all" &&
+        caregiverFilter !== "unassigned" &&
+        row.caregiverId !== caregiverFilter
+      ) {
         return false;
       }
       return true;
     });
   }, [rows, patientFilter, caregiverFilter]);
 
-  const patients = new Set((rows ?? []).map((row) => row.patientName ?? "Unspecified"));
+  const selectedPatient = (patients ?? []).find((patient) => patient._id === patientFilter);
+
+  const chartData = useMemo(() => {
+    if (!selectedPatient) return [];
+    return filtered
+      .filter((row) => row.patientId === selectedPatient._id)
+      .slice()
+      .reverse()
+      .map((row, index) => {
+        const bp = parseBp(row.bp);
+        return {
+          label:
+            row.timeLabel ||
+            (row.recordedAt
+              ? new Date(row.recordedAt).toLocaleDateString()
+              : `Reading ${index + 1}`),
+          systolic: bp?.systolic,
+          diastolic: bp?.diastolic,
+          spo2: row.spo2,
+          pulse: row.pulse,
+          temperature: parseTemperature(row.temperature),
+        };
+      });
+  }, [filtered, selectedPatient]);
+
+  const patientsTracked = new Set(
+    (rows ?? []).map((row) => row.patientId ?? "unspecified"),
+  ).size;
   const unassigned = (rows ?? []).filter((row) => !row.caregiverId).length;
 
   const openAdd = () => {
     setEditing(null);
-    setForm(emptyForm);
+    setForm({
+      ...emptyForm,
+      patientId:
+        patientFilter !== "all" && patientFilter !== "unassigned" ? patientFilter : "",
+    });
     setOpen(true);
   };
 
   const openEdit = (row: VitalRow) => {
     setEditing(row);
     setForm({
-      patientName: row.patientName ?? "",
+      patientId: row.patientId ?? "",
       caregiverId: row.caregiverId ?? "",
       timeLabel: row.timeLabel ?? "",
       bp: row.bp ?? "",
@@ -150,7 +220,7 @@ export default function VitalSigns() {
     setSaving(true);
     try {
       const payload = {
-        patientName: form.patientName.trim() || undefined,
+        patientId: form.patientId ? (form.patientId as Id<"patients">) : undefined,
         caregiverId: form.caregiverId
           ? (form.caregiverId as Id<"caregivers">)
           : undefined,
@@ -200,7 +270,7 @@ export default function VitalSigns() {
         <Card className="card-layer border-border/70">
           <CardContent className="pt-5">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Patients tracked</p>
-            <p className="mt-1 text-2xl font-semibold">{patients.size}</p>
+            <p className="mt-1 text-2xl font-semibold">{patientsTracked}</p>
           </CardContent>
         </Card>
         <Card className="card-layer border-border/70">
@@ -215,13 +285,15 @@ export default function VitalSigns() {
         <CardContent className="pt-5">
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <Select value={patientFilter} onValueChange={setPatientFilter}>
-              <SelectTrigger className="w-[190px]">
+              <SelectTrigger className="w-[210px]">
                 <SelectValue placeholder="Patient" />
               </SelectTrigger>
               <SelectContent>
-                {PATIENTS.map((patient) => (
-                  <SelectItem key={patient} value={patient}>
-                    {patient}
+                <SelectItem value="all">All patients</SelectItem>
+                <SelectItem value="unassigned">Unspecified</SelectItem>
+                {(patients ?? []).map((patient) => (
+                  <SelectItem key={patient._id} value={patient._id}>
+                    {patient.fullName}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -244,6 +316,139 @@ export default function VitalSigns() {
               Showing {filtered.length} of {rows?.length ?? 0}
             </span>
           </div>
+
+          {selectedPatient && chartData.length > 0 && (
+            <div className="mb-6">
+              <div className="mb-3 flex items-center gap-2">
+                <Activity className="size-4 text-muted-foreground" />
+                <h2 className="text-sm font-semibold">
+                  Trends — {selectedPatient.fullName}
+                </h2>
+              </div>
+              <div className="grid gap-4 lg:grid-cols-2">
+                <Card className="border-border/60">
+                  <CardHeader className="pb-1">
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <HeartPulse className="size-4 text-destructive" /> Blood pressure
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
+                        <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                        <YAxis tick={{ fontSize: 10 }} domain={["auto", "auto"]} />
+                        <Tooltip />
+                        <Legend />
+                        <Line
+                          type="monotone"
+                          dataKey="systolic"
+                          name="Systolic"
+                          stroke={CHART_COLORS.systolic}
+                          strokeWidth={2}
+                          connectNulls
+                          dot={{ r: 3 }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="diastolic"
+                          name="Diastolic"
+                          stroke={CHART_COLORS.diastolic}
+                          strokeWidth={2}
+                          connectNulls
+                          dot={{ r: 3 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/60">
+                  <CardHeader className="pb-1">
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <Activity className="size-4 text-complete" /> SpO₂
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
+                        <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                        <YAxis tick={{ fontSize: 10 }} domain={[80, 100]} />
+                        <Tooltip />
+                        <Line
+                          type="monotone"
+                          dataKey="spo2"
+                          name="SpO₂ (%)"
+                          stroke={CHART_COLORS.spo2}
+                          strokeWidth={2}
+                          connectNulls
+                          dot={{ r: 3 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/60">
+                  <CardHeader className="pb-1">
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <Activity className="size-4 text-pending" /> Pulse
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
+                        <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                        <YAxis tick={{ fontSize: 10 }} domain={["auto", "auto"]} />
+                        <Tooltip />
+                        <Line
+                          type="monotone"
+                          dataKey="pulse"
+                          name="Pulse (bpm)"
+                          stroke={CHART_COLORS.pulse}
+                          strokeWidth={2}
+                          connectNulls
+                          dot={{ r: 3 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/60">
+                  <CardHeader className="pb-1">
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <Thermometer className="size-4 text-progress" /> Temperature
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
+                        <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                        <YAxis tick={{ fontSize: 10 }} domain={["auto", "auto"]} />
+                        <Tooltip />
+                        <Line
+                          type="monotone"
+                          dataKey="temperature"
+                          name="Temperature (°C)"
+                          stroke={CHART_COLORS.temperature}
+                          strokeWidth={2}
+                          connectNulls
+                          dot={{ r: 3 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Imported readings have no calendar date; points are ordered as reported.
+              </p>
+            </div>
+          )}
 
           {rows === undefined ? (
             <div className="flex items-center justify-center py-12 text-muted-foreground">
@@ -334,13 +539,25 @@ export default function VitalSigns() {
           </DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="patientName">Patient</Label>
-              <Input
-                id="patientName"
-                value={form.patientName}
-                onChange={(e) => setForm({ ...form, patientName: e.target.value })}
-                placeholder="e.g. Sir Shelly"
-              />
+              <Label>Patient</Label>
+              <Select
+                value={form.patientId || "unspecified"}
+                onValueChange={(value) =>
+                  setForm({ ...form, patientId: value === "unspecified" ? "" : value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Unspecified" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unspecified">Unspecified</SelectItem>
+                  {(patients ?? []).map((patient) => (
+                    <SelectItem key={patient._id} value={patient._id}>
+                      {patient.fullName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5">
               <Label>Caregiver</Label>

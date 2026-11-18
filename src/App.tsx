@@ -16,6 +16,10 @@ const AuthPage = lazyPage(() => import("./pages/Auth"));
 const AdminDashboard = lazyPage(() => import("./pages/admin/AdminDashboard"));
 const TodaySchedule = lazyPage(() => import("./pages/admin/TodaySchedule"));
 const VitalSigns = lazyPage(() => import("./pages/admin/VitalSigns"));
+const Patients = lazyPage(() => import("./pages/admin/Patients"));
+const CareLog = lazyPage(() => import("./pages/admin/CareLog"));
+const Medications = lazyPage(() => import("./pages/admin/Medications"));
+const Visits = lazyPage(() => import("./pages/admin/Visits"));
 const Caregivers = lazyPage(() => import("./pages/admin/Caregivers"));
 const Shifts = lazyPage(() => import("./pages/admin/Shifts"));
 const TaskTemplates = lazyPage(() => import("./pages/admin/TaskTemplates"));
@@ -89,6 +93,10 @@ export function App() {
         <Route path="/dashboard" element={<AdminPage><AdminDashboard /></AdminPage>} />
         <Route path="/today" element={<AdminPage><TodaySchedule /></AdminPage>} />
         <Route path="/vitals" element={<AdminPage><VitalSigns /></AdminPage>} />
+        <Route path="/patients" element={<AdminPage><Patients /></AdminPage>} />
+        <Route path="/care-log" element={<AdminPage><CareLog /></AdminPage>} />
+        <Route path="/medications" element={<AdminPage><Medications /></AdminPage>} />
+        <Route path="/visits" element={<AdminPage><Visits /></AdminPage>} />
         <Route path="/caregivers" element={<AdminPage><Caregivers /></AdminPage>} />
         <Route path="/shifts" element={<AdminPage><Shifts /></AdminPage>} />
         <Route path="/tasks" element={<AdminPage><TaskTemplates /></AdminPage>} />
