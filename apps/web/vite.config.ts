@@ -1,4 +1,3 @@
-import { vlyPlugin } from "@vly-ai/integrations";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
@@ -6,7 +5,7 @@ import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), vlyPlugin(), tailwindcss()],
+  plugins: [react(), tailwindcss()],
   // Convex CLI writes .env.local at the monorepo root.
   envDir: path.resolve(__dirname, "../.."),
   cacheDir: "./.vite",
@@ -15,9 +14,7 @@ export default defineConfig({
       { find: "@convex", replacement: path.resolve(__dirname, "../../convex") },
       { find: "@", replacement: path.resolve(__dirname, "./src") },
     ],
-    // Force a single copy of React across all packages (including vlyPlugin).
-    // Without this, @vly-ai/integrations can resolve its own React copy, which
-    // triggers "Invalid hook call" errors at runtime.
+    // Force a single copy of React across all workspace packages.
     dedupe: ["react", "react/jsx-runtime", "react-dom", "react-dom/client"],
   },
   build: {
@@ -89,10 +86,6 @@ export default defineConfig({
       'react-router',
       '@convex-dev/auth/react',
       'framer-motion',
-      // vlyPlugin() injects this import at serve time, so the dep scanner
-      // never sees it. Without it here the first page load discovers it,
-      // re-optimizes and full-reloads the preview mid-screenshot.
-      '@vly-ai/integrations',
     ],
   },
   // Performance hints
