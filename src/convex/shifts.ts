@@ -61,3 +61,54 @@ export const setShiftActive = mutation({
   },
   returns: v.null(),
 });
+
+export const deleteShift = mutation({
+  args: { id: v.id("shifts") },
+  handler: async (ctx, args) => {
+    const admin = await getProfile(ctx);
+    if (!admin || admin.role !== "admin") throw new Error("Admin only");
+
+    const shift = await ctx.db.get(args.id);
+    if (!shift) throw new Error("Shift not found");
+
+    const [caregivers, profiles, assignments, scheduledTasks, visits] = await Promise.all([
+      ctx.db
+        .query("caregivers")
+        .withIndex("by_shiftId", (q) => q.eq("shiftId", args.id))
+        .collect(),
+      ctx.db.query("profiles").collect(),
+      ctx.db
+        .query("assignments")
+        .withIndex("by_shiftId", (q) => q.eq("shiftId", args.id))
+        .collect(),
+      ctx.db
+        .query("scheduledTasks")
+        .withIndex("by_shiftId", (q) => q.eq("shiftId", args.id))
+        .collect(),
+      ctx.db
+        .query("visits")
+        .withIndex("by_shiftId", (q) => q.eq("shiftId", args.id))
+        .collect(),
+    ]);
+
+    const profileRefs = profiles.filter((profile) => profile.shiftId === args.id).length;
+    const references = [
+      caregivers.length ? `${caregivers.length} caregiver${caregivers.length === 1 ? "" : "s"}` : null,
+      profileRefs ? `${profileRefs} profile${profileRefs === 1 ? "" : "s"}` : null,
+      assignments.length ? `${assignments.length} assignment${assignments.length === 1 ? "" : "s"}` : null,
+      scheduledTasks.length ? `${scheduledTasks.length} scheduled task${scheduledTasks.length === 1 ? "" : "s"}` : null,
+      visits.length ? `${visits.length} visit${visits.length === 1 ? "" : "s"}` : null,
+    ].filter(Boolean);
+
+    if (references.length > 0) {
+      throw new Error(
+        `Cannot delete "${shift.name}": it is referenced by ${references.join(", ")}. Reassign or remove those records, or deactivate the shift instead.`,
+      );
+    }
+
+    await ctx.db.delete(args.id);
+    await logAudit(ctx, admin._id, "shift.deleted", "shift", args.id, JSON.stringify(shift), undefined);
+    return null;
+  },
+  returns: v.null(),
+});
