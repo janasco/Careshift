@@ -45,11 +45,38 @@ exists. Caregiver accounts will be created by admin endpoints in the next phase.
 | GET | `/api/bootstrap/status` | `{ needsSetup }` |
 | POST | `/api/bootstrap/admin` | First admin only |
 | POST/GET | `/api/auth/*` | Better Auth |
-| GET/POST | `/api/patients` | Admin only |
-| GET/PATCH | `/api/patients/:id` | Admin only |
-| GET/POST | `/api/vitals` | Authenticated |
-| PATCH | `/api/vitals/:id` | Admin only |
+| GET | `/api/me` | Session, profile, shift |
+| GET/POST/PATCH | `/api/caregivers` | Admin |
+| GET/POST/PATCH/DELETE | `/api/shifts` | Auth read, admin write |
+| GET/POST/PATCH | `/api/patients` | Admin |
+| GET | `/api/patients/summaries` | Admin |
+| GET/POST/PATCH | `/api/vitals` | Authenticated; admin edit |
+| GET/POST/PATCH | `/api/care-events` | Authenticated; admin edit |
+| GET/POST/PATCH | `/api/medications` | Auth read, admin write |
+| GET | `/api/medications/doses?date=` | Today's doses |
+| POST | `/api/medications/doses/log` | Given / skipped / missed |
+| POST | `/api/medications/doses/clear` | Reset a dose |
+| GET | `/api/medications/adherence` | 7/30-day adherence |
+| GET | `/api/visits/today?date=` | Caregiver active/today visit |
+| POST | `/api/visits/clock-in` | Caregiver GPS visit start |
+| POST | `/api/visits/clock-out` | Caregiver visit end |
+| GET | `/api/visits?date=` | Admin visit list |
+| GET/POST/PATCH/DELETE | `/api/tasks/templates` | Task library |
+| GET/POST/PATCH/DELETE | `/api/tasks/assignments` | Recurring schedules |
+| POST | `/api/tasks/materialize` | Generate daily tasks |
+| GET | `/api/tasks/checklist/my-tasks?date=` | Caregiver checklist |
+| POST | `/api/tasks/checklist/complete` | Complete task |
+| POST | `/api/tasks/checklist/issue` | Report issue |
+| POST | `/api/tasks/checklist/note` | Add task note |
+| GET/PATCH | `/api/issues` | Admin issue management |
+| GET | `/api/admin/summary?date=` | Dashboard totals |
+| GET | `/api/admin/history` | History filters |
+| GET | `/api/admin/audit` | Audit log |
+| GET | `/api/admin/visits/overview?date=` | Not-started caregivers |
 | GET | `/api/realtime?workspace=default` | Durable Object WebSocket |
+
+`TIMEZONE_OFFSET_MINUTES` (default `480` for Asia/Manila) controls how local
+shift times are converted to timestamps during materialization.
 
 ## Deploy
 

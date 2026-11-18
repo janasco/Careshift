@@ -70,11 +70,17 @@ npm run dev:api            # http://localhost:8787
 Phase 1 currently includes:
 
 - Better Auth email/password sessions on D1
-- One-time admin bootstrap (`/api/bootstrap/admin`)
-- Patients and vital-signs API vertical slice
+- One-time admin bootstrap and caregiver account creation
+- Patients, vitals, care events, medications/dose logs/adherence
+- Shifts, task templates, assignments, daily materialization, caregiver checklist
+- Visits with GPS clock-in/out and task-completion gating
+- Admin summary, history, issues, audit, and caregiver workload overview
 - D1 schema for all domain tables
-- Durable Object realtime skeleton
+- Durable Object realtime skeleton + broadcast plumbing
 - Cron trigger placeholder for daily materialization
+
+The current website and Expo app still use Convex. The next phase switches both
+clients to this API and imports the existing data into D1.
 
 See `apps/api/README.md` for endpoints, deploy steps, and secrets.
 

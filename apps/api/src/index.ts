@@ -5,6 +5,15 @@ import type { Bindings } from "./env";
 import bootstrap from "./routes/bootstrap";
 import patients from "./routes/patients";
 import vitals from "./routes/vitals";
+import me from "./routes/me";
+import caregivers from "./routes/caregivers";
+import shifts from "./routes/shifts";
+import careEvents from "./routes/careEvents";
+import medications from "./routes/medications";
+import visits from "./routes/visits";
+import tasks from "./routes/tasks";
+import issues from "./routes/issues";
+import admin from "./routes/admin";
 import { WorkspaceRoom } from "./realtime";
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -52,8 +61,17 @@ app.post("/api/auth/sign-up/email", async (c) => {
 });
 
 app.route("/api/bootstrap", bootstrap);
+app.route("/api/me", me);
+app.route("/api/caregivers", caregivers);
+app.route("/api/shifts", shifts);
 app.route("/api/patients", patients);
 app.route("/api/vitals", vitals);
+app.route("/api/care-events", careEvents);
+app.route("/api/medications", medications);
+app.route("/api/visits", visits);
+app.route("/api/tasks", tasks);
+app.route("/api/issues", issues);
+app.route("/api/admin", admin);
 
 app.get("/api/realtime", async (c) => {
   if (c.req.header("Upgrade") !== "websocket") {

@@ -6,7 +6,8 @@
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
     "BETTER_AUTH_URL": "http://localhost:8787",
-    "WEB_ORIGIN": "http://localhost:5173"
+    "WEB_ORIGIN": "http://localhost:5173",
+    "TIMEZONE_OFFSET_MINUTES": "480"
   },
   "d1_databases": [
     {

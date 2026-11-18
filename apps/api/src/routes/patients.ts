@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { asc, eq } from "drizzle-orm";
-import { patients } from "@careshift/db";
+import { careEvents, patients, vitalSigns } from "@careshift/db";
 import { getDb } from "../db";
 import { requireAdmin, requireUser } from "../middleware/auth";
 import type { Bindings, Variables } from "../env";
@@ -29,6 +29,31 @@ app.get("/", async (c) => {
   const db = getDb(c.env);
   const rows = await db.select().from(patients).orderBy(asc(patients.fullName));
   return c.json(rows);
+});
+
+app.get("/summaries", async (c) => {
+  const db = getDb(c.env);
+  const patientRows = await db.select().from(patients).orderBy(asc(patients.fullName));
+  const vitalRows = await db.select().from(vitalSigns);
+  const eventRows = await db.select().from(careEvents);
+
+  return c.json(
+    patientRows.map((patient) => {
+      const patientVitals = vitalRows
+        .filter((row) => row.patientId === patient.id)
+        .sort((a, b) => b.createdAt - a.createdAt);
+      const patientEvents = eventRows
+        .filter((row) => row.patientId === patient.id)
+        .sort((a, b) => b.createdAt - a.createdAt);
+      return {
+        ...patient,
+        vitalsCount: patientVitals.length,
+        careEventCount: patientEvents.length,
+        latestVitals: patientVitals[0] ?? null,
+        latestEvent: patientEvents[0] ?? null,
+      };
+    }),
+  );
 });
 
 app.get("/:id", async (c) => {
