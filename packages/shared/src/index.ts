@@ -1,5 +1,31 @@
 export const APP_NAME = "CareShift";
 
+export const SHIFT_PRESETS = [
+  { name: "Morning Shift", start: "06:00", end: "14:00" },
+  { name: "Afternoon Shift", start: "14:00", end: "22:00" },
+  { name: "Night Shift", start: "22:00", end: "06:00" },
+] as const;
+
+export const ISSUE_TYPES = [
+  "Unable to complete",
+  "Client refused",
+  "Supplies unavailable",
+  "Emergency",
+  "Other",
+] as const;
+
+export const CATEGORIES = [
+  "Personal Care",
+  "Medication",
+  "Meals",
+  "Housekeeping",
+  "Monitoring",
+] as const;
+
+export const PRIORITIES = ["high", "medium", "low"] as const;
+
+export const ROLE = { admin: "admin", caregiver: "caregiver" } as const;
+
 export const CARE_EVENT_TYPES = [
   "Bowel movement",
   "Urine output",

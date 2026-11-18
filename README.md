@@ -5,10 +5,10 @@ their daily checklist in one tap on mobile; supervisors monitor progress in real
 from a full operations dashboard. Every action is timestamped, attributed, and
 preserved for accountability.
 
-Built with **Vite + React 19 + TypeScript + Tailwind v4 + shadcn/ui + Convex**
-(backend, database, auth, realtime) as a **PWA** installable on Android/iOS home
-screens. One codebase, no separate Android app needed — and the architecture is
-designed to scale from 3 caregivers to 50+ without schema changes.
+Built with **Vite + React 19 + TypeScript + Tailwind v4 + shadcn/ui** as a **PWA**,
+plus an **Expo** caregiver app. The current backend is Convex; it is being migrated
+to a **Cloudflare-native** stack (Workers + D1 + Better Auth + Durable Objects).
+The architecture is designed to scale from 3 caregivers to 50+ without schema changes.
 
 ---
 
@@ -20,12 +20,14 @@ CareShift/
 │  ├─ web/                 # admin/supervisor website (Vite + React)
 │  │  ├─ src/pages/admin/  # dashboard, patients, staff, meds, visits, reports
 │  │  └─ src/pages/CaregiverChecklist.tsx  # mobile-first PWA checklist
-│  └─ mobile/              # caregiver app (Expo / React Native)
-│     ├─ app/(auth)/       # sign in
-│     └─ app/(app)/        # checklist, visit clock-in/out, profile
+│  ├─ mobile/              # caregiver app (Expo / React Native)
+│  │  ├─ app/(auth)/       # sign in
+│  │  └─ app/(app)/        # checklist, visit clock-in/out, profile
+│  └─ api/                 # Cloudflare Workers + Hono + Better Auth (new)
 ├─ packages/
-│  └─ shared/              # shared constants, types, date/time helpers
-├─ convex/                 # single backend for web + mobile
+│  ├─ shared/              # shared constants, types, date/time helpers
+│  └─ db/                  # D1 schema + Drizzle migrations
+├─ convex/                 # legacy backend while migration is in progress
 ├─ package.json            # npm workspaces
 └─ convex.json
 ```
@@ -52,6 +54,29 @@ npm run convex:once
 ```
 
 See `apps/mobile/README.md` for phone/emulator setup and the Convex URL.
+
+## Cloudflare backend (migration in progress)
+
+The new backend lives in `apps/api` (Workers + Hono + D1 + Better Auth), with the
+D1 schema in `packages/db`. The existing Convex app remains the live backend while
+the migration is phased. The pre-migration code is tagged `convex-backup`.
+
+```bash
+npm run db:generate        # generate Drizzle SQL
+npm run db:migrate:local   # apply to local D1
+npm run dev:api            # http://localhost:8787
+```
+
+Phase 1 currently includes:
+
+- Better Auth email/password sessions on D1
+- One-time admin bootstrap (`/api/bootstrap/admin`)
+- Patients and vital-signs API vertical slice
+- D1 schema for all domain tables
+- Durable Object realtime skeleton
+- Cron trigger placeholder for daily materialization
+
+See `apps/api/README.md` for endpoints, deploy steps, and secrets.
 
 ### First-run setup
 
