@@ -20,6 +20,7 @@
     "dev:api": "npm --workspace @careshift/api run dev",
     "typecheck:api": "npm --workspace @careshift/api run typecheck",
     "deploy:api": "npm --workspace @careshift/api run deploy",
+    "deploy:web": "npm run build:web && wrangler pages deploy apps/web/dist --project-name careshift-web",
     "db:generate": "npm --workspace @careshift/db run generate",
     "db:migrate:local": "npm --workspace @careshift/db run migrate:local",
     "db:migrate:remote": "npm --workspace @careshift/db run migrate:remote",
@@ -27,6 +28,7 @@
     "convex:once": "convex dev --once"
   },
   "devDependencies": {
-    "convex": "^1.50.0"
+    "convex": "^1.50.0",
+    "wrangler": "^4.164.0"
   }
 }
