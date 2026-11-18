@@ -12,6 +12,12 @@ const m = (key: string): MutationToken => ({ __kind: "mutation", key });
 
 // ── request helpers ───────────────────────────────────────────────────────
 
+const API_BASE = (
+  (import.meta.env.VITE_API_URL as string | undefined) ?? ""
+).replace(/\/$/, "");
+
+export { API_BASE };
+
 function querystring(params?: Record<string, unknown>) {
   if (!params) return "";
   const search = new URLSearchParams();
@@ -29,7 +35,7 @@ async function request<T = any>(
   path: string,
   init?: RequestInit,
 ): Promise<T> {
-  const response = await fetch(path, {
+  const response = await fetch(`${API_BASE}${path}`, {
     credentials: "include",
     ...init,
     headers: {

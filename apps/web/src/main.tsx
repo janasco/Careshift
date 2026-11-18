@@ -1,7 +1,11 @@
 import '@vly-ai/integrations';
 import { Toaster } from "@/components/ui/sonner";
 import { VlyToolbar } from "../vly-toolbar-readonly.tsx";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQueryClient,
+} from "@tanstack/react-query";
 import React, { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
@@ -131,6 +135,40 @@ function RouteSyncer() {
   return null;
 }
 
+function RealtimeSync() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const configured = import.meta.env.VITE_API_URL as string | undefined;
+    const base = configured
+      ? configured.replace(/^http/, "ws").replace(/\/$/, "")
+      : `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`;
+    let socket: WebSocket | null = null;
+    let retry: ReturnType<typeof setTimeout> | null = null;
+    let closed = false;
+
+    const connect = () => {
+      socket = new WebSocket(`${base}/api/realtime?workspace=default`);
+      socket.onmessage = () => {
+        void queryClient.invalidateQueries();
+      };
+      socket.onclose = () => {
+        if (!closed) retry = setTimeout(connect, 3000);
+      };
+      socket.onerror = () => socket?.close();
+    };
+
+    connect();
+    return () => {
+      closed = true;
+      if (retry) clearTimeout(retry);
+      socket?.close();
+    };
+  }, [queryClient]);
+
+  return null;
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <RootErrorBoundary>
@@ -141,6 +179,7 @@ createRoot(document.getElementById("root")!).render(
         <BrowserRouter>
           <ServiceWorkerRegistration />
           <RouteSyncer />
+          <RealtimeSync />
           <App />
         </BrowserRouter>
         <Toaster />
