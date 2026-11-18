@@ -1,6 +1,6 @@
 {
-  "name": "ShiftAid — Caregiver Task & Shift Tracking",
-  "short_name": "ShiftAid",
+  "name": "CareShift — Caregiver Task & Shift Tracking",
+  "short_name": "CareShift",
   "description": "Caregiver shift and checklist tracking with a live supervisor dashboard.",
   "start_url": "/",
   "display": "standalone",

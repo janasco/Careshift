@@ -45,7 +45,7 @@ export default function SignIn() {
         style={styles.container}
       >
         <View style={styles.card}>
-          <Text style={styles.brand}>Careshift</Text>
+          <Text style={styles.brand}>CareShift</Text>
           <Text style={styles.title}>Caregiver sign in</Text>
           <Text style={styles.subtitle}>
             Use the account your supervisor created for you.

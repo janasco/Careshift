@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Careshift",
+    "name": "CareShift",
     "slug": "careshift",
     "version": "0.1.0",
     "scheme": "careshift",
@@ -12,7 +12,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Allow Careshift to record your location when you clock in and out."
+          "locationWhenInUsePermission": "Allow CareShift to record your location when you clock in and out."
         }
       ],
       "expo-status-bar"

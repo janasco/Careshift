@@ -1,6 +1,6 @@
-// ShiftAid service worker — offline-aware PWA support.
+// CareShift service worker — offline-aware PWA support.
 // Strategy: network-first for navigations and API, cache-first for static assets.
-const CACHE = "shiftaid-v2";
+const CACHE = "careshift-v1";
 const PRECACHE = ["/", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {

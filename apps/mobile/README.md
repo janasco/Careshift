@@ -1,4 +1,4 @@
-# Careshift Mobile (Expo)
+# CareShift Mobile (Expo)
 
 Caregiver app for Android/iOS. It talks to the same Convex backend as the web app.
 

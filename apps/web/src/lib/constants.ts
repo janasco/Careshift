@@ -9,4 +9,4 @@ export {
 } from "@convex/shared";
 export type { AppRole } from "@convex/shared";
 
-export const APP_NAME = "ShiftAid";
+export const APP_NAME = "CareShift";
