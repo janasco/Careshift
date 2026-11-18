@@ -21,10 +21,14 @@ export const listVitalSigns = query({
       .withIndex("by_createdAt")
       .order("desc")
       .collect();
+    const patients = await ctx.db.query("patients").collect();
     return rows.map((row) => ({
       ...row,
       caregiverName: row.caregiverName ?? "Unassigned",
-      patientName: row.patientName ?? "Unspecified",
+      patientName:
+        patients.find((patient) => patient._id === row.patientId)?.fullName ??
+        row.patientName ??
+        "Unspecified",
     }));
   },
   returns: v.any(),
@@ -34,6 +38,7 @@ export const listVitalSigns = query({
 
 export const createVitalSign = mutation({
   args: {
+    patientId: v.optional(v.id("patients")),
     patientName: v.optional(v.string()),
     caregiverId: v.optional(v.id("caregivers")),
     timeLabel: v.optional(v.string()),
@@ -46,6 +51,12 @@ export const createVitalSign = mutation({
   },
   handler: async (ctx, args) => {
     await requireAdminOrCli(ctx);
+
+    let patientName = args.patientName?.trim() || undefined;
+    if (args.patientId) {
+      const patient = await ctx.db.get(args.patientId);
+      patientName = patient?.fullName ?? patientName;
+    }
 
     let caregiverName: string | undefined;
     if (args.caregiverId) {
@@ -60,7 +71,8 @@ export const createVitalSign = mutation({
     }
 
     const id = await ctx.db.insert("vitalSigns", {
-      patientName: args.patientName?.trim() || undefined,
+      patientId: args.patientId,
+      patientName,
       caregiverId: args.caregiverId,
       caregiverName,
       timeLabel: args.timeLabel?.trim() || undefined,
@@ -83,6 +95,7 @@ export const createVitalSign = mutation({
 export const updateVitalSign = mutation({
   args: {
     id: v.id("vitalSigns"),
+    patientId: v.optional(v.id("patients")),
     patientName: v.optional(v.string()),
     caregiverId: v.optional(v.id("caregivers")),
     timeLabel: v.optional(v.string()),
@@ -98,6 +111,12 @@ export const updateVitalSign = mutation({
     const existing = await ctx.db.get(args.id);
     if (!existing) throw new Error("Vital signs record not found");
 
+    let patientName = args.patientName?.trim() || undefined;
+    if (args.patientId) {
+      const patient = await ctx.db.get(args.patientId);
+      patientName = patient?.fullName ?? patientName;
+    }
+
     let caregiverName: string | undefined;
     if (args.caregiverId) {
       const caregiver = await ctx.db.get(args.caregiverId);
@@ -111,7 +130,8 @@ export const updateVitalSign = mutation({
     }
 
     await ctx.db.patch(args.id, {
-      patientName: args.patientName?.trim() || undefined,
+      patientId: args.patientId,
+      patientName,
       caregiverId: args.caregiverId,
       caregiverName,
       timeLabel: args.timeLabel?.trim() || undefined,

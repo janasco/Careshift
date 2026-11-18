@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -34,11 +35,15 @@ import {
   AlertTriangle,
   Check,
   CircleDashed,
+  Clock,
   CloudOff,
   Loader2,
   LogOut,
-  StickyNote,
+  MapPin,
   PenLine,
+  Play,
+  Square,
+  StickyNote,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
@@ -60,6 +65,33 @@ type Task = {
   issue?: { issueType: string; description: string; status: string } | null;
 };
 
+function getPosition(): Promise<{ lat?: number; lng?: number; accuracy?: number }> {
+  return new Promise((resolve) => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      resolve({});
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) =>
+        resolve({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+        }),
+      () => resolve({}),
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 },
+    );
+  });
+}
+
+function formatDuration(ms: number) {
+  const totalMinutes = Math.max(0, Math.floor(ms / 60000));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours === 0) return `${minutes}m`;
+  return `${hours}h ${String(minutes).padStart(2, "0")}m`;
+}
+
 export default function CaregiverChecklist() {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
@@ -75,6 +107,9 @@ export default function CaregiverChecklist() {
   const addNote = useMutation(api.checklist.addTaskNote);
   const reportIssue = useMutation(api.checklist.reportIssue);
   const touchLogin = useMutation(api.profiles.touchLastLogin);
+  const visit = useQuery(api.visits.myVisitForDate, { date: today });
+  const clockIn = useMutation(api.visits.clockIn);
+  const clockOut = useMutation(api.visits.clockOut);
 
   // Record last login on load (audit-lite)
   useEffect(() => {
@@ -111,6 +146,9 @@ export default function CaregiverChecklist() {
   const [issueDesc, setIssueDesc] = useState("");
   const [busy, setBusy] = useState(false);
   const [optimistic, setOptimistic] = useState<Id<"scheduledTasks">[]>([]);
+  const [visitBusy, setVisitBusy] = useState(false);
+  const [clockOutOpen, setClockOutOpen] = useState(false);
+  const [clockOutNotes, setClockOutNotes] = useState("");
 
   const myShift = profile?.shiftId;
   const shift = useQuery(api.shifts.listShifts);
@@ -200,6 +238,47 @@ export default function CaregiverChecklist() {
     navigate("/");
   };
 
+  const handleClockIn = async () => {
+    setVisitBusy(true);
+    try {
+      const location = await getPosition();
+      await clockIn({ date: today, ...location });
+      toast.success("Clocked in", {
+        description:
+          location.lat != null
+            ? "GPS location recorded for this visit."
+            : "GPS unavailable — visit recorded without a location.",
+      });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not clock in");
+    } finally {
+      setVisitBusy(false);
+    }
+  };
+
+  const handleClockOut = async () => {
+    if (!visit) return;
+    setVisitBusy(true);
+    try {
+      const location = await getPosition();
+      const result = await clockOut({
+        visitId: visit._id,
+        date: visit.date,
+        notes: clockOutNotes || undefined,
+        ...location,
+      });
+      toast.success("Clocked out", {
+        description: `Visit duration: ${formatDuration(result.durationMs)}.`,
+      });
+      setClockOutOpen(false);
+      setClockOutNotes("");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not clock out");
+    } finally {
+      setVisitBusy(false);
+    }
+  };
+
   const sorted = [...(tasks ?? [])].sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime));
 
   return (
@@ -256,6 +335,107 @@ export default function CaregiverChecklist() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Visit verification */}
+        {visit === undefined ? (
+          <Card className="card-layer mb-4 border-border/70">
+            <CardContent className="flex items-center justify-center p-4 text-xs text-muted-foreground">
+              <Loader2 className="mr-2 size-4 animate-spin" /> Loading visit…
+            </CardContent>
+          </Card>
+        ) : (
+          <Card
+            className={cn(
+              "card-layer mb-4 border-border/70",
+              visit?.status === "active" && "border-complete/50 bg-complete-bg/30",
+            )}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 text-sm font-bold">
+                    <Clock className="size-4" /> Shift visit
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {!visit
+                      ? "Not clocked in yet"
+                      : visit.status === "completed"
+                        ? `Clocked in ${formatTime(visit.clockInAt)}${
+                            visit.clockOutAt ? ` · Clocked out ${formatTime(visit.clockOutAt)}` : ""
+                          }`
+                        : `Clocked in ${formatTime(visit.clockInAt)}`}
+                  </p>
+                  {visit?.status === "active" && (
+                    <p className="mt-1 font-mono text-xl font-bold tabular-nums">
+                      {formatDuration(now - visit.clockInAt)}
+                    </p>
+                  )}
+                  {visit?.status === "completed" && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Duration: {formatDuration((visit.clockOutAt ?? now) - visit.clockInAt)}
+                    </p>
+                  )}
+                </div>
+                {!visit ? (
+                  <Button
+                    size="sm"
+                    onClick={handleClockIn}
+                    disabled={visitBusy}
+                    className="cursor-pointer"
+                  >
+                    {visitBusy ? (
+                      <Loader2 className="mr-1.5 size-4 animate-spin" />
+                    ) : (
+                      <Play className="mr-1.5 size-4" />
+                    )}
+                    Clock in
+                  </Button>
+                ) : visit.status === "active" ? (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => setClockOutOpen(true)}
+                    className="cursor-pointer"
+                  >
+                    <Square className="mr-1.5 size-4" /> Clock out
+                  </Button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">Completed</Badge>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleClockIn}
+                      disabled={visitBusy}
+                      className="cursor-pointer"
+                    >
+                      {visitBusy ? (
+                        <Loader2 className="mr-1.5 size-4 animate-spin" />
+                      ) : (
+                        <Play className="mr-1.5 size-4" />
+                      )}
+                      Clock in again
+                    </Button>
+                  </div>
+                )}
+              </div>
+              {visit && (
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <MapPin className="size-3" />
+                    {visit.clockInLat != null ? "GPS at clock-in" : "No GPS at clock-in"}
+                  </span>
+                  {visit.status === "completed" && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="size-3" />
+                      {visit.clockOutLat != null ? "GPS at clock-out" : "No GPS at clock-out"}
+                    </span>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         <div className="mb-2 flex items-center justify-between px-1">
           <h2 className="text-sm font-bold tracking-tight">Today's Checklist</h2>
@@ -476,6 +656,45 @@ export default function CaregiverChecklist() {
             >
               {busy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <AlertTriangle className="mr-2 size-4" />}
               Send report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Clock out */}
+      <Dialog open={clockOutOpen} onOpenChange={setClockOutOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Clock out</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-2">
+            <Label>Shift notes (optional)</Label>
+            <Textarea
+              rows={3}
+              value={clockOutNotes}
+              onChange={(e) => setClockOutNotes(e.target.value)}
+              placeholder="Handover notes, unfinished tasks, observations…"
+            />
+          </div>
+          <DialogFooter className="flex-row justify-center gap-2">
+            <Button
+              variant="outline"
+              className="flex-1 cursor-pointer"
+              onClick={() => setClockOutOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="flex-1 cursor-pointer"
+              disabled={visitBusy}
+              onClick={handleClockOut}
+            >
+              {visitBusy ? (
+                <Loader2 className="mr-1 size-4 animate-spin" />
+              ) : (
+                <Square className="mr-1 size-4" />
+              )}
+              Clock out
             </Button>
           </DialogFooter>
         </DialogContent>
