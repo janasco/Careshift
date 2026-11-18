@@ -24,6 +24,7 @@ type PatientSummary = {
   _id: Id<"patients">;
   fullName: string;
   preferredName?: string;
+  aliases?: string[];
   dateOfBirth?: string;
   room?: string;
   address?: string;
@@ -50,6 +51,7 @@ type PatientSummary = {
 type Form = {
   fullName: string;
   preferredName: string;
+  aliases: string;
   dateOfBirth: string;
   room: string;
   address: string;
@@ -62,6 +64,7 @@ type Form = {
 const emptyForm: Form = {
   fullName: "",
   preferredName: "",
+  aliases: "",
   dateOfBirth: "",
   room: "",
   address: "",
@@ -106,6 +109,7 @@ export default function Patients() {
     setForm({
       fullName: patient.fullName,
       preferredName: patient.preferredName ?? "",
+      aliases: (patient.aliases ?? []).join(", "),
       dateOfBirth: patient.dateOfBirth ?? "",
       room: patient.room ?? "",
       address: patient.address ?? "",
@@ -127,6 +131,10 @@ export default function Patients() {
       const payload = {
         fullName: form.fullName,
         preferredName: form.preferredName || undefined,
+        aliases: form.aliases
+          .split(",")
+          .map((alias) => alias.trim())
+          .filter(Boolean),
         dateOfBirth: form.dateOfBirth || undefined,
         room: form.room || undefined,
         address: form.address || undefined,
@@ -190,8 +198,15 @@ export default function Patients() {
                   <div>
                     <CardTitle className="text-base">{patient.fullName}</CardTitle>
                     <p className="text-xs text-muted-foreground">
-                      {patient.preferredName ? `Prefers ${patient.preferredName}` : "Patient"}
+                      {patient.preferredName && patient.preferredName !== patient.fullName
+                        ? `Prefers ${patient.preferredName}`
+                        : "Patient"}
                     </p>
+                    {patient.aliases && patient.aliases.length > 0 && (
+                      <p className="text-[11px] text-muted-foreground">
+                        Also: {patient.aliases.join(", ")}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <Badge variant={patient.status === "active" ? "secondary" : "outline"}>
@@ -292,6 +307,15 @@ export default function Patients() {
                 value={form.preferredName}
                 onChange={(e) => setForm({ ...form, preferredName: e.target.value })}
                 placeholder="e.g. John"
+              />
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor="aliases">Also known as</Label>
+              <Input
+                id="aliases"
+                value={form.aliases}
+                onChange={(e) => setForm({ ...form, aliases: e.target.value })}
+                placeholder="e.g. Mr. Smith, John (comma separated)"
               />
             </div>
             <div className="space-y-1.5">

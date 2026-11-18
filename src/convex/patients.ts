@@ -7,6 +7,14 @@ async function requireAdmin(ctx: any) {
   if (!profile || profile.role !== "admin") throw new Error("Admin only");
 }
 
+function normalizeAliases(aliases?: string[]) {
+  if (!aliases) return undefined;
+  const cleaned = Array.from(
+    new Set(aliases.map((alias) => alias.trim()).filter(Boolean)),
+  );
+  return cleaned.length > 0 ? cleaned : undefined;
+}
+
 export const listPatients = query({
   args: {},
   handler: async (ctx) => {
@@ -50,6 +58,7 @@ export const createPatient = mutation({
   args: {
     fullName: v.string(),
     preferredName: v.optional(v.string()),
+    aliases: v.optional(v.array(v.string())),
     dateOfBirth: v.optional(v.string()),
     room: v.optional(v.string()),
     address: v.optional(v.string()),
@@ -64,6 +73,7 @@ export const createPatient = mutation({
     return await ctx.db.insert("patients", {
       fullName,
       preferredName: args.preferredName?.trim() || undefined,
+      aliases: normalizeAliases(args.aliases),
       dateOfBirth: args.dateOfBirth?.trim() || undefined,
       room: args.room?.trim() || undefined,
       address: args.address?.trim() || undefined,
@@ -82,6 +92,7 @@ export const updatePatient = mutation({
     patientId: v.id("patients"),
     fullName: v.optional(v.string()),
     preferredName: v.optional(v.string()),
+    aliases: v.optional(v.array(v.string())),
     dateOfBirth: v.optional(v.string()),
     room: v.optional(v.string()),
     address: v.optional(v.string()),
@@ -100,6 +111,7 @@ export const updatePatient = mutation({
       ...(args.preferredName !== undefined
         ? { preferredName: args.preferredName.trim() || undefined }
         : {}),
+      ...(args.aliases !== undefined ? { aliases: normalizeAliases(args.aliases) } : {}),
       ...(args.dateOfBirth !== undefined
         ? { dateOfBirth: args.dateOfBirth.trim() || undefined }
         : {}),
