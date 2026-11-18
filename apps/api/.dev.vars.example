@@ -1,5 +1,7 @@
 BETTER_AUTH_SECRET=replace-with-a-long-random-secret
 BETTER_AUTH_URL=http://localhost:8787
 WEB_ORIGIN=http://localhost:5173
+# Minutes to add to UTC for local shift times (Asia/Manila = 480).
+TIMEZONE_OFFSET_MINUTES=480
 # Set to true only temporarily if you need public sign-up.
 ALLOW_PUBLIC_SIGNUP=false

@@ -4,6 +4,20 @@ export class WorkspaceRoom {
   constructor(private state: DurableObjectState) {}
 
   async fetch(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+
+    if (request.method === "POST" && url.pathname === "/broadcast") {
+      const payload = await request.text();
+      for (const socket of this.sockets) {
+        try {
+          socket.send(payload);
+        } catch {
+          this.sockets.delete(socket);
+        }
+      }
+      return new Response("ok");
+    }
+
     if (request.headers.get("Upgrade") !== "websocket") {
       return new Response("Expected WebSocket", { status: 426 });
     }
