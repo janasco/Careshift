@@ -33,6 +33,6 @@ Admin accounts are intentionally redirected to the website.
 
 - **Checklist** — today's tasks and one-tap completion
 - **Visit** — GPS clock-in/out, live visit timer, handover notes
+- **Meds** — today's doses, Given / Skip / Reset, low-stock warnings
+- **Care** — add vital signs and care events, plus recent history
 - **Profile** — account info and sign out
-
-Medication confirmation and care-event entry are next.
