@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { formatTimeLabel, todayStr } from "@careshift/shared";
 
 import { apiGet, apiPost } from "@/lib/api";
+import { syncTaskReminders } from "@/lib/reminders";
 
 type Task = {
   _id: string;
@@ -22,6 +23,7 @@ type Task = {
   priority: string;
   patientName?: string;
   scheduledTime: string;
+  dueMs: number;
   status: string;
   note?: string | null;
   issue?: { issueType: string; description: string; status: string } | null;
@@ -69,6 +71,11 @@ export default function ChecklistScreen() {
     (row: any) => row._id === me.data?.profile?.shiftId,
   );
   const taskList = tasks.data ?? [];
+
+  useEffect(() => {
+    if (tasks.data) void syncTaskReminders(tasks.data);
+  }, [tasks.data]);
+
   const done = taskList.filter((task) => task.status === "completed").length;
   const total = taskList.length;
   const pct = total ? Math.round((done / total) * 100) : 0;

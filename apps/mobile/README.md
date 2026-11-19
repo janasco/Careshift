@@ -36,4 +36,14 @@ Admin accounts are intentionally redirected to the website.
 - **Meds** — today's doses, Given / Skip / Reset, low-stock warnings
 - **Care** — add vital signs and care events, plus recent history
 - **Handoff** — latest vitals, medications, care events, visit status, and open issues (from the Checklist screen)
-- **Profile** — account info and sign out
+- **Profile** — account info, device reminders, and sign out
+
+## Device reminders
+
+Open **Profile → Enable device reminders** and allow notifications. While the
+app is running, it schedules local reminders for:
+
+- pending tasks 10 minutes before they are due
+- medication doses at their scheduled time
+
+Only the next 24 hours are scheduled; opening the app refreshes the schedule.

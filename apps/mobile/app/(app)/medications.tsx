@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { formatTimeLabel, todayStr } from "@careshift/shared";
 
 import { apiGet, apiPost } from "@/lib/api";
+import { syncMedicationReminders } from "@/lib/reminders";
 
 type DoseLog = {
   _id: string;
@@ -67,6 +68,15 @@ export default function MedicationsScreen() {
       medication.doses.map((dose) => ({ medication, dose })),
     )
     .sort((a, b) => a.dose.time.localeCompare(b.dose.time));
+
+  useEffect(() => {
+    if (!medications.data) return;
+    void syncMedicationReminders(
+      medications.data.flatMap((medication) =>
+        medication.doses.map((dose) => ({ medication, dose })),
+      ),
+    );
+  }, [medications.data]);
 
   const taken = rows.filter((row) => row.dose.log?.status === "taken").length;
   const lowStock = (medications.data ?? []).filter((med) => med.lowStock);
