@@ -138,8 +138,7 @@ const STARTER_TEMPLATES = [
   { name: "Record observations", category: "Monitoring", priority: "low", estimatedDuration: 10, required: true, description: "General wellbeing and behavior notes" },
 ] as const;
 
-app.post("/seed-templates", requireUser, requireAdmin, async (c) => {
-  const db = getDb(c.env);
+async function ensureStarterTemplates(db: ReturnType<typeof getDb>) {
   const existing = new Set(
     (await db.select({ name: taskTemplates.name }).from(taskTemplates)).map(
       (row) => row.name,
@@ -168,7 +167,119 @@ app.post("/seed-templates", requireUser, requireAdmin, async (c) => {
     added += 1;
   }
 
-  return c.json({ added, skipped });
+  return { added, skipped };
+}
+
+app.post("/seed-templates", requireUser, requireAdmin, async (c) => {
+  const db = getDb(c.env);
+  return c.json(await ensureStarterTemplates(db));
+});
+
+const STARTER_ASSIGNMENTS: Record<
+  string,
+  Array<{ name: string; time: string }>
+> = {
+  "Morning Shift": [
+    { name: "Check vital signs", time: "08:00" },
+    { name: "Assist with medication", time: "08:00" },
+    { name: "Prepare breakfast", time: "08:30" },
+    { name: "Check hydration", time: "10:00" },
+    { name: "Record observations", time: "12:00" },
+  ],
+  "Afternoon Shift": [
+    { name: "Prepare lunch", time: "12:30" },
+    { name: "Check hydration", time: "14:00" },
+    { name: "Check vital signs", time: "16:00" },
+    { name: "Record observations", time: "18:00" },
+    { name: "Assist with medication", time: "20:00" },
+  ],
+  "Night Shift": [
+    { name: "Prepare dinner", time: "18:30" },
+    { name: "Assist with medication", time: "20:00" },
+    { name: "Record observations", time: "22:00" },
+    { name: "Check vital signs", time: "22:00" },
+    { name: "Check hydration", time: "02:00" },
+  ],
+};
+
+app.post("/starter", requireUser, requireAdmin, async (c) => {
+  const db = getDb(c.env);
+  const now = Date.now();
+
+  let shiftRows = await db.select().from(shifts);
+  if (shiftRows.length === 0) {
+    await db.insert(shifts).values(
+      SHIFT_PRESETS.map((preset) => ({
+        id: crypto.randomUUID(),
+        name: preset.name,
+        startTime: preset.start,
+        endTime: preset.end,
+        active: true,
+        createdAt: now,
+      })),
+    );
+    shiftRows = await db.select().from(shifts);
+  }
+
+  const templates = await ensureStarterTemplates(db);
+
+  const caregiverRows = await db.select().from(caregivers);
+  const unassigned = caregiverRows.filter((caregiver) => !caregiver.shiftId);
+  let caregiversAssigned = 0;
+  for (const [index, caregiver] of unassigned.entries()) {
+    const shift = shiftRows[index % shiftRows.length];
+    if (!shift) break;
+    await db
+      .update(caregivers)
+      .set({ shiftId: shift.id })
+      .where(eq(caregivers.id, caregiver.id));
+    await db
+      .update(profiles)
+      .set({ shiftId: shift.id, updatedAt: now })
+      .where(eq(profiles.userId, caregiver.userId));
+    caregiversAssigned += 1;
+  }
+
+  const existingAssignments = await db.select({ id: assignments.id }).from(assignments);
+  let assignmentsCreated = 0;
+  if (existingAssignments.length === 0) {
+    const patientRows = await db
+      .select()
+      .from(patients)
+      .where(eq(patients.status, "active"))
+      .limit(1);
+    const firstPatient = patientRows[0];
+    const templateRows = await db.select().from(taskTemplates);
+
+    for (const shift of shiftRows) {
+      const defaults = STARTER_ASSIGNMENTS[shift.name] ?? [];
+      for (const item of defaults) {
+        const template = templateRows.find((row) => row.name === item.name);
+        if (!template) continue;
+        await db.insert(assignments).values({
+          id: crypto.randomUUID(),
+          taskTemplateId: template.id,
+          shiftId: shift.id,
+          caregiverId: null,
+          patientId: firstPatient?.id ?? null,
+          scheduledTime: item.time,
+          dueTime: item.time,
+          daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+          active: true,
+          createdAt: now,
+        });
+        assignmentsCreated += 1;
+      }
+    }
+  }
+
+  return c.json({
+    shifts: shiftRows.length,
+    templates,
+    caregiversAssigned,
+    assignmentsCreated,
+    patient: (await db.select().from(patients).limit(1))[0]?.fullName ?? null,
+  });
 });
 
 app.post("/reset", requireUser, requireAdmin, async (c) => {

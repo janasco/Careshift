@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -19,6 +20,7 @@ type Task = {
   taskName: string;
   category: string;
   priority: string;
+  patientName?: string;
   scheduledTime: string;
   status: string;
   note?: string | null;
@@ -27,6 +29,7 @@ type Task = {
 
 export default function ChecklistScreen() {
   const today = todayStr();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const me = useQuery({
     queryKey: ["me"],
@@ -48,6 +51,19 @@ export default function ChecklistScreen() {
     },
   });
   const [busyId, setBusyId] = useState<string | null>(null);
+  const materialized = useRef(false);
+
+  useEffect(() => {
+    if (materialized.current) return;
+    materialized.current = true;
+    void apiPost("/api/tasks/materialize", { date: today })
+      .then(() =>
+        queryClient.invalidateQueries({ queryKey: ["checklist", today] }),
+      )
+      .catch(() => {
+        /* the list will refresh on the next load */
+      });
+  }, [today, queryClient]);
 
   const shift = shifts.data?.find(
     (row: any) => row._id === me.data?.profile?.shiftId,
@@ -86,6 +102,16 @@ export default function ChecklistScreen() {
           </Text>
         </View>
 
+        <Pressable
+          onPress={() => router.push("/handoff")}
+          style={({ pressed }) => [
+            styles.handoffButton,
+            pressed && { opacity: 0.8 },
+          ]}
+        >
+          <Text style={styles.handoffText}>View shift handoff summary</Text>
+        </Pressable>
+
         {tasks.isLoading && (
           <View style={styles.loading}>
             <ActivityIndicator size="large" color="#0f766e" />
@@ -112,6 +138,7 @@ export default function ChecklistScreen() {
                     {task.taskName}
                   </Text>
                   <Text style={styles.taskMeta}>
+                    {task.patientName ? `${task.patientName} · ` : ""}
                     {formatTimeLabel(task.scheduledTime)} · {task.category} ·{" "}
                     {task.priority}
                   </Text>
@@ -218,6 +245,16 @@ const styles = StyleSheet.create({
   badgeText: { fontSize: 11, fontWeight: "700", color: "#334155" },
   note: { fontSize: 13, color: "#475569" },
   issueText: { fontSize: 13, color: "#b91c1c" },
+  handoffButton: {
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#99f6e4",
+    paddingVertical: 11,
+    alignItems: "center",
+    marginBottom: 2,
+  },
+  handoffText: { color: "#0f766e", fontWeight: "700", fontSize: 13 },
   completeButton: {
     backgroundColor: "#0f766e",
     borderRadius: 12,

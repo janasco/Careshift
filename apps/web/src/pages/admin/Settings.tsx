@@ -14,6 +14,7 @@ import { toast } from "sonner";
 export default function Settings() {
   const reset = useMutation(api.bootstrap.resetWorkspace);
   const seedTemplates = useMutation(api.bootstrap.seedStarterTemplates);
+  const setupWorkspace = useMutation(api.bootstrap.starterWorkspace);
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
@@ -66,6 +67,20 @@ export default function Settings() {
       );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not add templates");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const runStarterWorkspace = async () => {
+    setBusy(true);
+    try {
+      const result = await setupWorkspace({});
+      toast.success("Starter workspace ready", {
+        description: `${result.shifts} shifts · ${result.templates?.added ?? 0} new tasks · ${result.assignmentsCreated} assignments · ${result.caregiversAssigned} caregivers assigned`,
+      });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not set up workspace");
     } finally {
       setBusy(false);
     }
@@ -141,6 +156,33 @@ export default function Settings() {
                 Update password
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="card-layer border-border/70">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <DatabaseZap className="size-4 text-muted-foreground" /> Quick-start workspace
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Creates the three standard shifts, adds the starter task library,
+              assigns any caregivers without a shift, and creates patient-linked
+              recurring tasks for each shift. Safe to run more than once.
+            </p>
+            <Button
+              onClick={runStarterWorkspace}
+              disabled={busy}
+              className="mt-4 cursor-pointer"
+            >
+              {busy ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : (
+                <DatabaseZap className="mr-2 size-4" />
+              )}
+              Set up starter workspace
+            </Button>
           </CardContent>
         </Card>
 

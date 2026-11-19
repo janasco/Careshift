@@ -195,6 +195,9 @@ export const assignments = sqliteTable(
     caregiverId: text("caregiver_id").references(() => caregivers.id, {
       onDelete: "set null",
     }),
+    patientId: text("patient_id").references(() => patients.id, {
+      onDelete: "set null",
+    }),
     scheduledTime: text("scheduled_time").notNull(),
     dueTime: text("due_time").notNull(),
     daysOfWeek: text("days_of_week", { mode: "json" })
@@ -207,6 +210,7 @@ export const assignments = sqliteTable(
     index("assignments_shift_id_idx").on(table.shiftId),
     index("assignments_caregiver_id_idx").on(table.caregiverId),
     index("assignments_template_id_idx").on(table.taskTemplateId),
+    index("assignments_patient_id_idx").on(table.patientId),
   ],
 );
 

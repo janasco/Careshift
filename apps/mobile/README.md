@@ -35,4 +35,5 @@ Admin accounts are intentionally redirected to the website.
 - **Visit** — GPS clock-in/out, live visit timer, handover notes
 - **Meds** — today's doses, Given / Skip / Reset, low-stock warnings
 - **Care** — add vital signs and care events, plus recent history
+- **Handoff** — latest vitals, medications, care events, visit status, and open issues (from the Checklist screen)
 - **Profile** — account info and sign out

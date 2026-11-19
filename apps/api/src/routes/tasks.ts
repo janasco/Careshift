@@ -6,6 +6,7 @@ import {
   assignments,
   caregivers,
   issues,
+  patients,
   profiles,
   scheduledTasks,
   shifts,
@@ -30,6 +31,9 @@ async function enrichTasks(
   const caregiverIds = Array.from(new Set(tasks.map((task) => task.caregiverId)));
   const templateIds = Array.from(new Set(tasks.map((task) => task.templateId)));
   const shiftIds = Array.from(new Set(tasks.map((task) => task.shiftId)));
+  const patientIds = Array.from(
+    new Set(tasks.map((task) => task.patientId).filter((id): id is string => Boolean(id))),
+  );
   const taskIds = tasks.map((task) => task.id);
 
   const caregiverRows =
@@ -55,6 +59,10 @@ async function enrichTasks(
     shiftIds.length > 0
       ? await db.select().from(shifts).where(inArray(shifts.id, shiftIds))
       : [];
+  const patientRows =
+    patientIds.length > 0
+      ? await db.select().from(patients).where(inArray(patients.id, patientIds))
+      : [];
   const issueRows =
     taskIds.length > 0
       ? await db
@@ -68,6 +76,7 @@ async function enrichTasks(
     const profile = profileRows.find((row) => row.userId === caregiver?.userId);
     const template = templateRows.find((row) => row.id === task.templateId);
     const shift = shiftRows.find((row) => row.id === task.shiftId);
+    const patient = patientRows.find((row) => row.id === task.patientId);
     const taskIssues = issueRows
       .filter((row) => row.scheduledTaskId === task.id)
       .sort((a, b) => b.createdAt - a.createdAt);
@@ -83,6 +92,7 @@ async function enrichTasks(
       priority: template?.priority ?? "medium",
       required: template?.required ?? false,
       shiftName: shift?.name ?? "",
+      patientName: patient?.fullName ?? "Unspecified",
       completedAt: task.completedAt ?? null,
       note: task.note ?? null,
       issue: issue
@@ -113,6 +123,7 @@ const assignmentSchema = z.object({
   taskTemplateId: z.string().min(1),
   shiftId: z.string().min(1),
   caregiverId: z.string().min(1).nullable().optional(),
+  patientId: z.string().min(1).nullable().optional(),
   scheduledTime: z.string().regex(/^\d{2}:\d{2}$/),
   dueTime: z.string().regex(/^\d{2}:\d{2}$/),
   daysOfWeek: z.array(z.number().int().min(0).max(6)).min(1),
@@ -215,6 +226,8 @@ app.get("/assignments", async (c) => {
       shiftName: shifts.name,
       caregiverId: assignments.caregiverId,
       caregiverName: profiles.fullName,
+      patientId: assignments.patientId,
+      patientName: patients.fullName,
       scheduledTime: assignments.scheduledTime,
       dueTime: assignments.dueTime,
       daysOfWeek: assignments.daysOfWeek,
@@ -224,7 +237,8 @@ app.get("/assignments", async (c) => {
     .leftJoin(taskTemplates, eq(taskTemplates.id, assignments.taskTemplateId))
     .leftJoin(shifts, eq(shifts.id, assignments.shiftId))
     .leftJoin(caregivers, eq(caregivers.id, assignments.caregiverId))
-    .leftJoin(profiles, eq(profiles.userId, caregivers.userId));
+    .leftJoin(profiles, eq(profiles.userId, caregivers.userId))
+    .leftJoin(patients, eq(patients.id, assignments.patientId));
   return c.json(rows);
 });
 
@@ -241,6 +255,7 @@ app.post(
       taskTemplateId: body.taskTemplateId,
       shiftId: body.shiftId,
       caregiverId: body.caregiverId ?? null,
+      patientId: body.patientId ?? null,
       scheduledTime: body.scheduledTime,
       dueTime: body.dueTime,
       daysOfWeek: body.daysOfWeek,
@@ -364,7 +379,7 @@ app.post(
           assignmentId: assignment.id,
           templateId: assignment.taskTemplateId,
           caregiverId: caregiver.id,
-          patientId: null,
+          patientId: assignment.patientId ?? null,
           shiftId: assignment.shiftId,
           date,
           scheduledTime: assignment.scheduledTime,
@@ -435,6 +450,7 @@ app.post(
     z.object({
       templateId: z.string().min(1),
       caregiverId: z.string().min(1),
+      patientId: z.string().min(1).optional(),
       date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
       scheduledTime: z.string().regex(/^\d{1,2}:\d{2}$/),
     }),
@@ -485,7 +501,7 @@ app.post(
       assignmentId: null,
       templateId: template.id,
       caregiverId: caregiver.id,
-      patientId: null,
+      patientId: body.patientId ?? null,
       shiftId: shift.id,
       date: body.date,
       scheduledTime: body.scheduledTime,
