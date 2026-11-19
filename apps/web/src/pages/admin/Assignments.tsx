@@ -36,6 +36,7 @@ export default function Assignments() {
   const templates = useQuery(api.tasks.listTemplates);
   const shifts = useQuery(api.shifts.listShifts);
   const caregivers = useQuery(api.admin.caregiverDirectory);
+  const patients = useQuery(api.patients.listPatients);
   const save = useMutation(api.assignments.saveAssignment);
   const setActive = useMutation(api.assignments.setAssignmentActive);
 
@@ -46,6 +47,7 @@ export default function Assignments() {
     taskTemplateId: "",
     shiftId: "",
     caregiverId: "any",
+    patientId: "any",
     scheduledTime: "08:00",
     dueTime: "09:00",
     daysOfWeek: [1, 2, 3, 4, 5, 6, 0] as number[],
@@ -59,6 +61,8 @@ export default function Assignments() {
   const shiftName = (id: Id<"shifts">) => shifts?.find((s) => s._id === id)?.name ?? "Shift";
   const cgName = (id?: Id<"caregivers">) =>
     id ? caregivers?.find((c) => c._id === id)?.fullName ?? "Caregiver" : "Any on shift";
+  const patientName = (id?: Id<"patients">) =>
+    id ? patients?.find((p) => p._id === id)?.fullName ?? "Patient" : "All patients";
 
   const handleSave = async () => {
     const parsed = AssignmentSchema.safeParse({
@@ -77,6 +81,7 @@ export default function Assignments() {
         taskTemplateId: form.taskTemplateId as Id<"taskTemplates">,
         shiftId: form.shiftId as Id<"shifts">,
         caregiverId: form.caregiverId === "any" ? undefined : (form.caregiverId as Id<"caregivers">),
+        patientId: form.patientId === "any" ? undefined : (form.patientId as Id<"patients">),
         scheduledTime: form.scheduledTime,
         dueTime: form.dueTime,
         daysOfWeek: form.daysOfWeek,
@@ -113,6 +118,7 @@ export default function Assignments() {
               taskTemplateId: "",
               shiftId: "",
               caregiverId: "any",
+              patientId: "any",
               scheduledTime: "08:00",
               dueTime: "09:00",
               daysOfWeek: [1, 2, 3, 4, 5, 6, 0],
@@ -150,6 +156,7 @@ export default function Assignments() {
                     </div>
                     <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                       <span>{shiftName(a.shiftId)}</span>·<span>{cgName(a.caregiverId)}</span>·
+                      <span>{patientName(a.patientId)}</span>·
                       <span className="flex gap-0.5">
                         {DAY_LABELS.map((d, i) => (
                           <span
@@ -245,6 +252,23 @@ export default function Assignments() {
                     .filter((c) => c.status === "active")
                     .map((c) => (
                       <SelectItem key={c._id} value={c._id}>{c.fullName}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label>Patient</Label>
+              <Select
+                value={form.patientId}
+                onValueChange={(v) => setForm((f) => ({ ...f, patientId: v }))}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="any">All patients</SelectItem>
+                  {(patients ?? [])
+                    .filter((p) => p.status === "active")
+                    .map((p) => (
+                      <SelectItem key={p._id} value={p._id}>{p.fullName}</SelectItem>
                     ))}
                 </SelectContent>
               </Select>

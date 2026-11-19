@@ -232,6 +232,8 @@ async function executeMutation(key: string, args: any): Promise<any> {
       return request("/api/bootstrap/reset", json({}));
     case "bootstrap.seedStarterTemplates":
       return request("/api/bootstrap/seed-templates", json({}));
+    case "bootstrap.starterWorkspace":
+      return request("/api/bootstrap/starter", json({}));
 
     case "profiles.createProfile":
       return request(
@@ -438,6 +440,7 @@ export const api = {
     claimAdmin: m("bootstrap.claimAdmin"),
     resetWorkspace: m("bootstrap.resetWorkspace"),
     seedStarterTemplates: m("bootstrap.seedStarterTemplates"),
+    starterWorkspace: m("bootstrap.starterWorkspace"),
   },
   careEvents: {
     listCareEvents: q("careEvents.listCareEvents"),

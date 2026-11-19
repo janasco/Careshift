@@ -56,6 +56,7 @@ type Task = {
   taskDescription?: string;
   category: string;
   priority: string;
+  patientName?: string;
   required: boolean;
   scheduledTime: string;
   dueMs: number;
@@ -515,6 +516,11 @@ export default function CaregiverChecklist() {
                             </span>
                           </div>
                           <div className="mt-0.5 text-xs text-muted-foreground">
+                            {t.patientName && (
+                              <span className="font-medium text-foreground">
+                                {t.patientName} ·{" "}
+                              </span>
+                            )}
                             {isDone && t.completedAt ? (
                               <>Completed {formatTime(t.completedAt)}</>
                             ) : (

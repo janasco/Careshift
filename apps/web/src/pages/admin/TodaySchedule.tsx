@@ -210,7 +210,7 @@ export default function TodaySchedule() {
                       <div className="min-w-0 flex-1">
                         <div className="truncate text-sm font-medium">{t.taskName}</div>
                         <div className="text-xs text-muted-foreground">
-                          Due {formatTime(t.dueMs)}
+                          Due {formatTime(t.dueMs)} · {t.patientName ?? "Unspecified"}
                           {t.note && ` · 📝 ${t.note}`}
                         </div>
                       </div>
