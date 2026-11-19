@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiGet, authClient } from "@/lib/api";
+import { ensureRemindersPermission } from "@/lib/reminders";
 
 export default function ProfileScreen() {
   const me = useQuery({
@@ -18,6 +21,27 @@ export default function ProfileScreen() {
     queryFn: () => apiGet("/api/me"),
   });
   const router = useRouter();
+  const [reminderBusy, setReminderBusy] = useState(false);
+
+  const enableReminders = async () => {
+    setReminderBusy(true);
+    try {
+      const granted = await ensureRemindersPermission();
+      if (granted) {
+        Alert.alert(
+          "Reminders enabled",
+          "Task and medication reminders will be scheduled from today's checklist and medication list.",
+        );
+      } else {
+        Alert.alert(
+          "Permission needed",
+          "Allow notifications in Android settings to receive reminders.",
+        );
+      }
+    } finally {
+      setReminderBusy(false);
+    }
+  };
 
   if (me.isLoading) {
     return (
@@ -47,6 +71,21 @@ export default function ProfileScreen() {
             </Text>
           </View>
         </View>
+
+        <Pressable
+          onPress={enableReminders}
+          disabled={reminderBusy}
+          style={({ pressed }) => [
+            styles.reminderButton,
+            pressed && { opacity: 0.8 },
+          ]}
+        >
+          {reminderBusy ? (
+            <ActivityIndicator color="#0f766e" />
+          ) : (
+            <Text style={styles.reminderText}>Enable device reminders</Text>
+          )}
+        </Pressable>
 
         <Pressable
           onPress={async () => {
@@ -86,6 +125,15 @@ const styles = StyleSheet.create({
   },
   label: { color: "#64748b", fontSize: 13 },
   value: { color: "#0f172a", fontWeight: "600", fontSize: 13, textTransform: "capitalize" },
+  reminderButton: {
+    backgroundColor: "#ffffff",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#99f6e4",
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+  reminderText: { color: "#0f766e", fontWeight: "700" },
   signOut: {
     backgroundColor: "#0f172a",
     borderRadius: 14,
