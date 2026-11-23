@@ -1,7 +1,7 @@
 # CareShift API (Cloudflare Workers)
 
-New Cloudflare-native backend, built alongside the existing Convex implementation
-while the migration is in progress.
+Cloudflare-native backend for CareShift. The website and Expo app use this API;
+the old Convex implementation is kept only on the `convex-backup` tag.
 
 ## Stack
 
@@ -24,7 +24,12 @@ npm run dev:api              # http://localhost:8787
 ```
 
 Secrets for local development live in `apps/api/.dev.vars` (ignored by Git).
-Copy `.dev.vars.example` if it does not exist.
+In the maintainer workspace it is a symlink into the private repository; copy
+`.dev.vars.example` if you do not have access to that repository.
+
+Set `TRUSTED_ORIGINS` to a comma-separated list when the website is opened from
+a LAN address or custom domain. `WEB_ORIGIN`, localhost, and the Expo schemes are
+always allowed.
 
 ## First admin
 
@@ -80,17 +85,18 @@ shift times are converted to timestamps during materialization.
 
 ## Import existing Convex data
 
-From the repo root, with the Convex dev backend running:
+The generic importer is tracked in this repository:
 
 ```bash
 IMPORT_TEMP_PASSWORD='a-temporary-password' node apps/api/scripts/import-convex.mjs
 npx wrangler d1 execute careshift --local --config apps/api/wrangler.jsonc \
-  --file /tmp/opencode/careshift-import.sql
+  --file import.sql
 ```
 
-Imported users receive the temporary password; reset them from the admin UI
-after cutover. Passwords from Convex Auth cannot be reused because Better Auth
-uses a different password hash.
+Real exports and import data belong in the private repository. Imported users
+receive the temporary password; reset them from the admin UI after cutover.
+Passwords from Convex Auth cannot be reused because Better Auth uses a different
+password hash.
 
 ## Deploy
 

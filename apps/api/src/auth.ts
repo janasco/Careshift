@@ -7,6 +7,10 @@ import type { Bindings } from "./env";
 
 export function createAuth(env: Bindings) {
   const db = getDb(env);
+  const extraOrigins = (env.TRUSTED_ORIGINS ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
   return betterAuth({
     database: drizzleAdapter(db, {
@@ -20,9 +24,9 @@ export function createAuth(env: Bindings) {
       env.WEB_ORIGIN,
       "http://localhost:5173",
       "http://127.0.0.1:5173",
-      "http://10.0.0.243:5173",
       "careshift://",
       "exp://**",
+      ...extraOrigins,
     ],
     plugins: [expo()],
     emailAndPassword: {

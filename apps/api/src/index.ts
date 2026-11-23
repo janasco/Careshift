@@ -28,12 +28,15 @@ app.use(
   cors({
     origin: (origin, c) => {
       if (!origin) return origin;
+      const extraOrigins = (c.env.TRUSTED_ORIGINS ?? "")
+        .split(",")
+        .map((allowed: string) => allowed.trim())
+        .filter(Boolean);
       const allowed = [
         c.env.WEB_ORIGIN,
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        "http://10.0.0.243:5173",
-        "http://10.0.0.2:5173",
+        ...extraOrigins,
       ];
       return allowed.includes(origin) ? origin : null;
     },

@@ -24,10 +24,11 @@ QR code with Expo Go, or press `a` to start an Android emulator.
 
 ## Android APK
 
-A debug APK is served by the local website:
+A debug APK is served by the local website. Replace `YOUR_HOST` with the
+machine's LAN IP or hostname:
 
 ```
-http://10.0.0.243:5173/downloads/careshift-debug.apk
+http://YOUR_HOST:5173/downloads/careshift-debug.apk
 ```
 
 - `arm64-v8a`, debug-signed, package `com.apexsinc.careshift`
@@ -45,8 +46,8 @@ The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 ## Sign in
 
-Use a caregiver account created by the admin. Imported accounts use the
-temporary password from the Convex migration and should be reset afterward.
+Use a caregiver account created by the admin. If accounts were imported, reset
+their temporary passwords from the admin UI after cutover.
 
 Admin accounts are intentionally redirected to the website.
 

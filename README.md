@@ -1,285 +1,173 @@
 # CareShift — Caregiver Task & Shift Tracking System
 
-A production-ready caregiver shift & checklist tracking system. Caregivers complete
-their daily checklist in one tap on mobile; supervisors monitor progress in real time
-from a full operations dashboard. Every action is timestamped, attributed, and
-preserved for accountability.
+CareShift is a caregiver shift and checklist tracking system. Caregivers complete
+their daily checklist from a phone; supervisors monitor progress, visits,
+medications, vitals, issues, and audit history from an operations dashboard.
 
-Built with **Vite + React 19 + TypeScript + Tailwind v4 + shadcn/ui** as a **PWA**,
-plus an **Expo** caregiver app. The current backend is Convex; it is being migrated
-to a **Cloudflare-native** stack (Workers + D1 + Better Auth + Durable Objects).
-The architecture is designed to scale from 3 caregivers to 50+ without schema changes.
+> **Repository split**
+>
+> - [`janasco/Careshift`](https://github.com/janasco/Careshift) — this public
+>   repository. Source code and documentation only.
+> - `janasco/careshift-private` — private repository for environment files,
+>   credentials, patient imports, and database backups.
+>
+> Never commit `.env` files, tokens, API keys, real patient data, or backups to
+> this repository. See [Private configuration](#private-configuration).
 
----
+## Stack
+
+- **Website:** Vite + React 19 + TypeScript + Tailwind v4 + shadcn/ui (PWA)
+- **Mobile:** Expo / React Native (Android and iOS)
+- **API:** Cloudflare Workers + Hono
+- **Database:** Cloudflare D1 (SQLite) + Drizzle ORM
+- **Auth:** Better Auth email/password sessions
+- **Realtime:** Durable Object WebSocket broadcasts
+- **Legacy backend:** Convex code remains on the `convex-backup` tag for rollback
 
 ## Repository structure
 
 ```
 CareShift/
 ├─ apps/
-│  ├─ web/                 # admin/supervisor website (Vite + React)
-│  │  ├─ src/pages/admin/  # dashboard, patients, staff, meds, visits, reports
-│  │  └─ src/pages/CaregiverChecklist.tsx  # mobile-first PWA checklist
-│  ├─ mobile/              # caregiver app (Expo / React Native)
-│  │  ├─ app/(auth)/       # sign in
-│  │  └─ app/(app)/        # checklist, visit clock-in/out, profile
-│  └─ api/                 # Cloudflare Workers + Hono + Better Auth (new)
+│  ├─ web/                  # admin/supervisor website and mobile-first PWA
+│  ├─ mobile/               # Expo caregiver app
+│  └─ api/                  # Cloudflare Workers API (Hono, D1, Better Auth)
 ├─ packages/
-│  ├─ shared/              # shared constants, types, date/time helpers
-│  └─ db/                  # D1 schema + Drizzle migrations
-├─ convex/                 # legacy backend while migration is in progress
-├─ package.json            # npm workspaces
-└─ convex.json
+│  ├─ shared/               # shared constants, types, date/time helpers
+│  └─ db/                   # D1 schema and Drizzle migrations
+├─ convex/                  # legacy Convex backend (rollback only)
+├─ docs/                    # deployment runbook
+├─ package.json             # npm workspaces
+└─ README.md
 ```
-
-## Quick start
-
-```bash
-npm install
-
-# First run — local D1 database
-npm run db:migrate:local
-
-# Terminal 1 — Cloudflare API
-npm run dev:api           # http://localhost:8787
-
-# Terminal 2 — website
-npm run dev:web           # http://localhost:5173
-
-# Optional — Expo caregiver app
-npm run dev:mobile
-```
-
-The legacy Convex backend is still available while the migration is finalized:
-
-```bash
-npm run convex:dev
-npm run convex:once
-```
-
-See `apps/mobile/README.md` for phone/emulator setup and the API URL.
-
-## Cloudflare backend
-
-The backend lives in `apps/api` (Workers + Hono + D1 + Better Auth), with the D1
-schema in `packages/db`. The website and Expo app now use this API. Convex is kept
-only as a rollback path and is tagged `convex-backup`.
-
-```bash
-npm run db:generate        # generate Drizzle SQL
-npm run db:migrate:local   # apply to local D1
-npm run dev:api            # http://localhost:8787
-```
-
-Phase 1 currently includes:
-
-- Better Auth email/password sessions on D1
-- One-time admin bootstrap and caregiver account creation
-- Patients, vitals, care events, medications/dose logs/adherence
-- Shifts, task templates, assignments, daily materialization, caregiver checklist
-- Visits with GPS clock-in/out and task-completion gating
-- Admin summary, history, issues, audit, and caregiver workload overview
-- D1 schema for all domain tables
-- Durable Object realtime skeleton + broadcast plumbing
-- Cron trigger placeholder for daily materialization
-
-The Convex data has been imported into local D1. Imported accounts use the
-temporary password supplied during import until the admin resets them.
-
-Remaining before production:
-
-- create the remote D1 database and deploy the Worker
-- deploy the website to Cloudflare Pages
-- reset imported account passwords
-- wire realtime invalidation into React Query (the Durable Object is ready)
-
-See `apps/api/README.md` for endpoints, deploy steps, and secrets.
-
-### First-run setup
-
-On first open, the sign-in page shows a **one-time workspace setup form**: create the
-administrator account (your name, email, and a password of at least 8 characters).
-The first account created becomes the admin — the setup form disappears afterwards.
-
-### Creating caregiver accounts
-
-1. Sign in as the administrator → **Caregivers → Add caregiver**.
-2. Fill in name, email (used to sign in), phone, optional employee code, shift, and
-   an **initial password** (at least 8 characters).
-3. Share the email + password with the caregiver securely — they sign in at `/auth`
-   and land on their own checklist.
-
-If a caregiver forgets their password, use the key icon on their row to set a new one
-(takes effect immediately, and is recorded in the audit log).
-
-A **Settings → Reset workspace** action permanently clears all data (caregivers,
-tasks, history, issues, audit logs) and restores the three standard shifts, letting
-you start fresh; the admin account is recreated through the setup form again.
-
----
 
 ## Features
 
-### Supervisor (admin)
-- **Dashboard** — live totals (today's tasks, completed, pending, overdue, issues),
-  per-caregiver status with progress bars, completion-by-shift chart, task-state chart.
-  Updates in real time as caregivers check tasks off.
-- **Today's Schedule** — chronological view grouped by shift with live status chips;
-  add one-off tasks for any caregiver.
-- **Caregivers** — add/edit/disable accounts with an initial password, reset
-  passwords (audited), view per-caregiver timeline and details.
-- **Shifts** — create custom shifts; overnight windows supported and labeled.
-- **Task Templates** — full CRUD by category, priority, duration, required/recurring.
-  Templates are **deactivated, never deleted** — history is preserved.
-- **Assignments** — recurring schedules by task × shift × caregiver × days × time,
-  materialized into daily checklists automatically.
-- **History** — filter by date range, caregiver, shift, task, status; export **CSV**
-  or **print/PDF**.
-- **Reports** — daily, per-caregiver (incl. average minutes late), and per-shift
-  reports over any date range, with exports.
-- **Issues** — open/resolved tabs, resolve with a note (audited).
-- **Audit Log** — filterable record of every important action with before/after values,
-  exportable to CSV.
-- **Settings** — workspace reset (clears all data; standard shifts restored).
+### Supervisor
 
-### Caregiver (mobile-first)
-- Signs in → sees **only** their shift and today's checklist (enforced server-side).
-- **One tap to complete** — confirm dialog records exact time, caregiver, and task.
-- Notes and **issue reporting** (5 issue types) per task.
-- Large 48px tap targets, sticky progress header, live clock.
-- **Offline-safe**: if the network drops, completions/issues queue locally and sync
-  automatically when back online. Duplicate submissions are prevented.
+- Live dashboard: today's totals, completion rate, overdue tasks, issues, and
+  per-caregiver progress
+- Today's schedule grouped by shift
+- Caregiver accounts, password resets, shifts, and workload views
+- Task templates and recurring assignments materialized into daily checklists
+- Patients, vitals, care events, medications and dose logs, visits, and reports
+- History with CSV/print export, issue resolution, and a filterable audit log
+- One-time workspace setup; public sign-up is disabled
 
----
+### Caregiver
 
-## Architecture
+- Sign in and see only the assigned shift and today's checklist
+- One-tap task completion with server-side timestamps and audit trail
+- Task notes and issue reporting
+- GPS clock-in/out with a live visit timer and handover notes
+- Medication Given / Skip / Reset and low-stock warnings
+- Vitals and care-event entry
+- Handoff summary of recent care activity
+- Local Android task and medication reminders
+- Offline-safe queue for checklist actions
 
-```
-apps/web/src/          # Website (Vite + React)
-  pages/admin/         # dashboard, patients, caregivers, shifts, tasks,
-                       # assignments, medications, care log, vitals, visits,
-                       # history, reports, issues, audit, settings
-  pages/CaregiverChecklist.tsx  # mobile-first PWA checklist + clock-in/out
-  components/          # AppShell, Timeline, ui/ (shadcn)
-  hooks/               # profile, clock, offline queue, auth
-  lib/                 # formatters, status logic, CSV/print export, schemas
-apps/mobile/app/       # Expo caregiver app
-  (auth)/sign-in.tsx
-  (app)/checklist.tsx
-  (app)/visit.tsx
-  (app)/profile.tsx
-packages/shared/       # constants, severity/type helpers, date/time helpers
-convex/                # Backend shared by both apps
-  schema.ts            # users, profiles, caregivers, shifts, patients, tasks,
-                       # assignments, scheduledTasks, completions, issues,
-                       # vitals, care events, medications, medication logs,
-                       # visits, audit logs
-  profiles.ts          # profile + caregiver account management, audit helper
-  shifts.ts            # shift CRUD + safe delete
-  tasks.ts             # task template CRUD (soft-delete)
-  assignments.ts       # recurring schedules + daily materialization
-  checklist.ts         # caregiver checklist queries + complete/report-issue
-  patients.ts          # patient profiles and summaries
-  vitals.ts            # vital-sign readings and trends
-  careEvents.ts        # toileting, medication, stoma, pain, intake log
-  medications.ts       # schedules, dose logs, adherence, stock
-  visits.ts            # EVV clock-in/out and GPS audit
-  admin.ts             # dashboard summary, directory, history, issues
-  reports.ts           # daily / caregiver / shift / trend reports
-  timeline.ts          # caregiver activity timelines
-  issues.ts            # issue resolution
-  audit.ts             # audit log query
-  bootstrap.ts         # workspace status/reset + one-time admin claim
-  shared.ts            # constants + pure time math shared by server
-```
+## Quick start
 
-### Design decisions
+### Private configuration
 
-- **One backend, two clients**: the website and Expo app share the same Convex
-  schema, auth, and generated API types.
-- **Server-side everything**: completion timestamps, status transitions, and the
-  audit trail are written in Convex mutations. The client cannot forge them.
-- **Patients are first-class**: vitals, care events, and medications link to a
-  patient record; aliases map alternate names to the same person.
-- **Historical immutability**: completed records are never edited or deleted.
-  Deactivating a template/assignment stops future generation only.
-- **Dynamic caregiver count**: nothing is hard-coded to 3 caregivers. Assignments can
-  target "any caregiver on shift", so new hires instantly receive tasks.
-- **Overnight shifts**: due times before shift start roll to the next calendar day;
-  the materializer and status logic both handle this.
-- **Realtime**: Convex queries are reactive subscriptions — the dashboard updates
-  without page refreshes the moment a caregiver acts.
-- **Extensibility**: photo attachments, pay integration, push notifications, and
-  richer medication recurrence patterns can layer on without breaking changes.
-
-### Design decisions
-
-- **Server-side everything**: completion timestamps, status transitions, and the
-  audit trail are written in Convex mutations. The client cannot forge them.
-- **Historical immutability**: completed records are never edited or deleted.
-  Deactivating a template/assignment stops future generation only.
-- **Dynamic caregiver count**: nothing is hard-coded to 3 caregivers. Assignments can
-  target "any caregiver on shift", so new hires instantly receive tasks.
-- **Overnight shifts**: due times before shift start roll to the next calendar day;
-  the materializer and status logic both handle this.
-- **Realtime**: Convex queries are reactive subscriptions — the dashboard updates
-  without page refreshes the moment a caregiver acts.
-- **Extensibility**: multi-client/patient, photo attachments, pay integration, and
-  push notifications can layer on top of the existing tables without breaking changes.
-
----
-
-## Setup & deployment
-
-### Environment
-
-`convex dev` writes `CONVEX_DEPLOYMENT`, `VITE_CONVEX_URL`, and
-`VITE_CONVEX_SITE_URL` to `.env.local` at the repository root. The website reads
-that file via Vite's `envDir`.
-
-The mobile app reads `apps/mobile/.env.local`:
+Environment files and secrets intentionally live outside this repository. If you
+have access to the private repository, clone it as a sibling and link the files:
 
 ```bash
-EXPO_PUBLIC_CONVEX_URL=http://YOUR_LAN_IP:3210
+git clone git@github.com:janasco/careshift-private.git /opt/repo/careshift-private
+CARESHIFT_PUBLIC_DIR=/opt/repo/Careshift \
+  /opt/repo/careshift-private/scripts/link-env.sh
 ```
 
-For a self-managed deployment:
+The link script creates gitignored symlinks:
+
+```
+.env                 -> careshift-private/env/root.env
+.env.local           -> careshift-private/env/root.env.local
+.env.keys            -> careshift-private/env/root.env.keys
+apps/api/.dev.vars   -> careshift-private/env/api.dev.vars
+apps/mobile/.env.local -> careshift-private/env/mobile.env.local
+```
+
+Without access, start from the committed examples:
 
 ```bash
-npx convex deploy          # push functions to production deployment
-npm run build:web          # build the website (apps/web/dist)
+cp apps/api/.dev.vars.example apps/api/.dev.vars
+cp apps/mobile/.env.example apps/mobile/.env.local
 ```
 
-Then host `apps/web/dist/` on any static host (Vercel, Netlify, Cloudflare
-Pages) with `VITE_CONVEX_URL` pointing at your Convex production deployment.
+Use a long random value for `BETTER_AUTH_SECRET`, never a production secret.
 
-### PWA installation
-
-On Android Chrome: open the app → menu → **Add to Home screen**. The app installs
-with its own icon and runs standalone. The service worker caches the shell so the
-checklist keeps working through brief connectivity loss; queued completions sync
-automatically.
-
-### Packaging as Android app (optional later)
-
-The PWA can be wrapped with **Bubblewrap** (Trusted Web Activity) or Capacitor to
-publish to the Play Store without rewriting any UI:
+### Install and run
 
 ```bash
-npm i -g @bubblewrap/cli
-bubblewrap init --manifest https://your-domain/manifest.webmanifest
-bubblewrap build
+npm install
+npm run db:migrate:local
+
+# terminal 1 — API
+npm run dev:api             # http://localhost:8787
+
+# terminal 2 — website
+npm run dev:web             # http://localhost:5173
+
+# optional — Expo app
+npm run dev:mobile
 ```
 
----
+The mobile API URL comes from `EXPO_PUBLIC_API_URL` in
+`apps/mobile/.env.local`. The phone and the API host must be on the same network.
+
+### Android app
+
+A debug APK is served by the local website at
+`/downloads/careshift-debug.apk`. Build instructions, native requirements, and
+device setup are in [`apps/mobile/README.md`](apps/mobile/README.md).
+
+## Cloudflare API
+
+```bash
+npm run db:generate        # generate Drizzle SQL from packages/db
+npm run db:migrate:local   # apply migrations to local D1
+npm run dev:api            # local Worker with D1 binding
+```
+
+Local secrets belong in `apps/api/.dev.vars` (private, gitignored). Production
+secrets belong in `wrangler secret put`; never add them to `wrangler.jsonc`.
+
+Extra browser origins for LAN or custom-domain access can be supplied as a
+comma-separated `TRUSTED_ORIGINS` value. `WEB_ORIGIN`, localhost, and the Expo
+schemes are always allowed.
+
+## Deployment
+
+Create the D1 database, apply migrations, set Worker secrets, and deploy:
+
+```bash
+npx wrangler d1 create careshift
+npm run db:migrate:remote
+npx wrangler secret put BETTER_AUTH_SECRET --config apps/api/wrangler.jsonc
+npm run deploy:api
+```
+
+The website is built with `npm run build:web` and deployed separately to
+Cloudflare Pages. See [`docs/cloudflare-deploy.md`](docs/cloudflare-deploy.md)
+for the full runbook. Remote deployment is not configured in this repository;
+database IDs and deployment credentials stay private.
 
 ## Security model
 
-- Email + password auth via Convex Auth (Lucia Scrypt hashing); sessions expire
-  automatically. Passwords are only set by the administrator or the one-time
-  setup form — there is no open sign-up.
-- Role gate on every route (`RoleRoute`) **and** on every query/mutation —
-  `caregiver` records are filtered by the caller's own ID server-side.
-- Input validation with zod on forms and Convex validators on every function.
-- Audit log captures actor, action, entity, and old/new values for
-  logins, completions, issues, account changes, shifts, and assignments.
+- Better Auth email/password sessions with server-side role checks on every
+  route and query. Caregivers can only read their own assignments.
+- No public sign-up; the first admin is created through a one-time bootstrap form.
+- Parameterized D1 queries and schema validation at the API boundary.
+- Immutable history: completed tasks and care records are not edited or deleted;
+  templates and assignments are deactivated instead.
+- Audit log records actor, action, entity, and before/after values for account
+  changes, task completion, issues, visits, and other important actions.
+- Patient data is never seeded into public source. Local imports and exports live
+  only in the private repository.
+
+## Legacy Convex backend
+
+Convex is no longer the active backend. The final Convex implementation is kept
+on the `convex-backup` tag for rollback reference. Do not add new features there.
