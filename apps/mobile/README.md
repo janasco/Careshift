@@ -22,6 +22,27 @@ EXPO_PUBLIC_API_URL=http://YOUR_LAN_IP:8787
 The phone and the machine running the API must be on the same network. Scan the
 QR code with Expo Go, or press `a` to start an Android emulator.
 
+## Android APK
+
+A debug APK is served by the local website:
+
+```
+http://10.0.0.243:5173/downloads/careshift-debug.apk
+```
+
+- `arm64-v8a`, debug-signed, package `com.apexsinc.careshift`
+- The API URL is baked in from `EXPO_PUBLIC_API_URL` at build time
+- Install from the phone browser and allow installs from unknown sources
+
+To rebuild (JDK 21 + Android SDK required):
+
+```bash
+npm run prebuild:android
+npm run apk:android
+```
+
+The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
+
 ## Sign in
 
 Use a caregiver account created by the admin. Imported accounts use the
