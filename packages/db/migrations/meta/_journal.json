@@ -15,6 +15,13 @@
       "when": 1795074721529,
       "tag": "0001_freezing_changeling",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1795426118587,
+      "tag": "0002_cool_carmella_unuscione",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,4 @@
-# CareShift Mobile (Expo)
+# CareShift Caregiver (Expo)
 
 Caregiver app for Android/iOS. It talks to the Cloudflare Workers API.
 
@@ -24,25 +24,27 @@ QR code with Expo Go, or press `a` to start an Android emulator.
 
 ## Android APK
 
-A debug APK is served by the local website. Replace `YOUR_HOST` with the
-machine's LAN IP or hostname:
+CareShift Caregiver is an internal release build served by the local website.
+Replace `YOUR_HOST` with the machine's LAN IP or hostname:
 
 ```
-http://YOUR_HOST:5173/downloads/careshift-debug.apk
+http://YOUR_HOST:5173/downloads/careshift-caregiver.apk
 ```
 
 - `arm64-v8a`, debug-signed, package `com.apexsinc.careshift`
+- Standalone JS bundle — no Metro server needed on the phone
 - The API URL is baked in from `EXPO_PUBLIC_API_URL` at build time
 - Install from the phone browser and allow installs from unknown sources
 
-To rebuild (JDK 21 + Android SDK required):
+To rebuild from the repository root (JDK 21 + Android SDK required):
 
 ```bash
-npm run prebuild:android
-npm run apk:android
+npm run prebuild:caregiver
+npm run apk:caregiver
 ```
 
-The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
+The APK is written to `android/app/build/outputs/apk/release/app-release.apk`.
+The organizer uses a separate app in [`../organizer`](../organizer).
 
 ## Sign in
 

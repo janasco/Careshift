@@ -2,15 +2,15 @@ import { motion } from "framer-motion";
 import {
   Activity,
   ArrowRight,
-  BellRing,
+  BookOpen,
   CalendarClock,
   Check,
   CheckCircle2,
   ClipboardCheck,
+  Pill,
   ShieldCheck,
   Smartphone,
   Users,
-  WifiOff,
 } from "lucide-react";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
@@ -27,51 +27,59 @@ const fadeUp = {
 
 const features = [
   {
-    icon: ClipboardCheck,
-    title: "One-tap checklists",
-    body: "Caregivers see their shift and today's tasks the moment they sign in. One tap confirms completion — timestamped, attributed, synced.",
-  },
-  {
-    icon: Activity,
-    title: "Live supervisor view",
-    body: "The dashboard updates the moment a task is checked off. Completion rates, overdue alerts, and open issues at a glance.",
+    icon: Pill,
+    title: "Medication tracking",
+    body: "Set up the complete medication schedule. One tap confirms a dose is given, and everyone in the family sees it instantly.",
   },
   {
     icon: CalendarClock,
-    title: "Shifts & recurring tasks",
-    body: "Morning, afternoon, and overnight shifts with automatic day-rollover. Assign task templates by shift, caregiver, day, and time.",
+    title: "Shared care calendar",
+    body: "Doctor appointments, family visits, and reminders in one calendar. Every care team member sees the same plan.",
   },
   {
-    icon: WifiOff,
-    title: "Offline-safe recording",
-    body: "Weak signal in a client's home? Completions queue locally and sync automatically — nothing silently disappears.",
+    icon: ClipboardCheck,
+    title: "Task coordination",
+    body: "Assign care tasks to family members or hired caregivers. Everyone knows what they are responsible for and when.",
+  },
+  {
+    icon: BookOpen,
+    title: "Care journal",
+    body: "Log daily observations, health notes, and care updates. Build a running record any family member can reference.",
+  },
+  {
+    icon: Users,
+    title: "One connected team",
+    body: "Whether you live next door or 400 miles away, everyone stays informed without WhatsApp groups or sticky notes.",
   },
   {
     icon: ShieldCheck,
-    title: "Role-based security",
-    body: "Caregivers only ever see their own tasks. Admins get full oversight. Every important action lands in the audit log.",
-  },
-  {
-    icon: BellRing,
-    title: "Issues surfaced fast",
-    body: "“Client refused”, “supplies unavailable”, emergencies — reported in seconds and shown prominently until resolved.",
+    title: "Private and secure",
+    body: "Role-based access keeps care notes inside the team. Every important action is timestamped and preserved.",
   },
 ];
 
 const roles = [
   {
     icon: Users,
-    label: "For supervisors",
-    points: ["Real-time caregiver status", "History with filters & exports", "Reports: daily, caregiver, shift"],
-    href: "/auth?returnTo=%2Fdashboard",
-    cta: "Open the dashboard",
+    label: "For organizers",
+    points: [
+      "Manage medications, appointments, and tasks",
+      "Invite family members and caregivers",
+      "Follow the care journal and daily reports",
+    ],
+    href: "/downloads/careshift-organizer.apk",
+    cta: "Get the organizer app",
   },
   {
     icon: Smartphone,
     label: "For caregivers",
-    points: ["Today's checklist, zero menus", "Large tap targets", "Notes & issue reporting"],
-    href: "/auth?returnTo=%2Fchecklist",
-    cta: "Open my checklist",
+    points: [
+      "See today's care plan, zero menus",
+      "One-tap medication confirmation",
+      "Add notes and report issues",
+    ],
+    href: "/downloads/careshift-caregiver.apk",
+    cta: "Get the caregiver app",
   },
 ];
 
@@ -96,7 +104,7 @@ export default function Landing() {
           </Link>
           <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground md:flex">
             <a href="#features" className="transition-colors hover:text-foreground">Features</a>
-            <a href="#roles" className="transition-colors hover:text-foreground">For your team</a>
+            <a href="#apps" className="transition-colors hover:text-foreground">Get the apps</a>
             <a href="#how" className="transition-colors hover:text-foreground">How it works</a>
           </nav>
           <div className="flex items-center gap-2">
@@ -126,7 +134,7 @@ export default function Landing() {
             <motion.div {...fadeUp}>
               <Badge variant="secondary" className="mb-4 gap-1.5 px-3 py-1">
                 <CheckCircle2 className="size-3.5 text-complete" />
-                Caregiver operations, under control
+                Your care team, in one place
               </Badge>
             </motion.div>
             <motion.h1
@@ -134,17 +142,17 @@ export default function Landing() {
               transition={{ delay: 0.06 }}
               className="text-balance text-4xl font-bold tracking-tight sm:text-5xl"
             >
-              Every task done.
-              <span className="block text-primary">Every shift accounted for.</span>
+              Nobody misses a medication.
+              <span className="block text-primary">Nobody feels left out.</span>
             </motion.h1>
             <motion.p
               {...fadeUp}
               transition={{ delay: 0.12 }}
               className="mx-auto mt-4 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg"
             >
-              {APP_NAME} turns daily care checklists into a live operations view — caregivers
-              check tasks off in one tap, supervisors watch progress in real time, and every
-              record is kept for accountability.
+              {APP_NAME} brings your whole care team together — from daily medications to
+              doctor appointments to care notes. Stop juggling group chats, sticky notes, and
+              phone calls. One shared space keeps every family member informed.
             </motion.p>
             <motion.div
               {...fadeUp}
@@ -152,12 +160,12 @@ export default function Landing() {
               className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row"
             >
               <Button size="lg" asChild className="w-full cursor-pointer sm:w-auto">
-                <Link to="/auth?returnTo=%2Fdashboard">
-                  Sign in to your workspace <ArrowRight className="ml-1.5 size-4" />
-                </Link>
+                <a href="#apps">
+                  Get the apps <ArrowRight className="ml-1.5 size-4" />
+                </a>
               </Button>
               <Button size="lg" variant="outline" asChild className="w-full cursor-pointer sm:w-auto">
-                <a href="#how">See how it works</a>
+                <Link to="/auth?returnTo=%2Fdashboard">Open the organizer console</Link>
               </Button>
             </motion.div>
           </div>
@@ -173,17 +181,17 @@ export default function Landing() {
               <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
                 <div className="rounded-xl border border-border/70 p-4">
                   <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
-                    <span>TODAY'S OVERVIEW</span>
+                    <span>TODAY'S CARE</span>
                     <span className="flex items-center gap-1">
                       <span className="size-1.5 animate-pulse rounded-full bg-complete" /> live
                     </span>
                   </div>
                   <div className="mt-3 grid grid-cols-4 gap-3 text-center">
                     {[
-                      ["24", "Tasks", "text-foreground"],
-                      ["17", "Done", "text-complete"],
-                      ["5", "Pending", "text-pending"],
-                      ["2", "Issues", "text-issue"],
+                      ["6", "Meds", "text-foreground"],
+                      ["4", "Given", "text-complete"],
+                      ["2", "Due", "text-pending"],
+                      ["1", "Note", "text-issue"],
                     ].map(([n, l, tone]) => (
                       <div key={l} className="rounded-lg bg-muted/60 px-2 py-3">
                         <div className={`text-2xl font-bold tabular-nums ${tone}`}>{n}</div>
@@ -193,9 +201,9 @@ export default function Landing() {
                   </div>
                   <div className="mt-4 space-y-2">
                     {[
-                      ["Maria", "Morning", 8, 8, "bg-complete"],
-                      ["Ana", "Afternoon", 5, 8, "bg-progress"],
-                      ["Lisa", "Night", 0, 8, "bg-muted-foreground/30"],
+                      ["Mom", "Meds", 8, 8, "bg-complete"],
+                      ["Dad", "Visits", 5, 8, "bg-progress"],
+                      ["Ana", "Tasks", 0, 8, "bg-muted-foreground/30"],
                     ].map(([name, shift, done, total, color]) => (
                       <div key={name as string} className="flex items-center gap-3 text-sm">
                         <span className="w-12 font-medium">{name}</span>
@@ -216,12 +224,12 @@ export default function Landing() {
                 {/* Phone mock */}
                 <div className="mx-auto w-44 rounded-[1.6rem] border border-border/70 bg-card p-2.5 shadow-sm">
                   <div className="rounded-[1.2rem] border border-border/50 p-3">
-                    <div className="text-[10px] font-bold text-muted-foreground">MY SHIFT · MORNING</div>
+                    <div className="text-[10px] font-bold text-muted-foreground">TODAY'S CARE</div>
                     <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
                       <div className="h-full w-3/4 rounded-full bg-complete" />
                     </div>
                     <div className="mt-3 space-y-2">
-                      {["Prepare breakfast", "Medication check", "Personal hygiene", "Room cleaning"].map((t, i) => (
+                      {["Morning medications", "Doctor appointment", "Pick up prescription", "Blood pressure check"].map((t, i) => (
                         <div key={t} className="flex items-center gap-2 rounded-lg border border-border/60 px-2 py-1.5">
                           <div className={`flex size-5 items-center justify-center rounded-md border ${i < 2 ? "border-complete bg-complete text-white" : "border-border"}`}>
                             {i < 2 && <Check className="size-3" strokeWidth={3} />}
@@ -242,10 +250,10 @@ export default function Landing() {
       <section id="features" className="border-t border-border/60 bg-card/40 py-16 sm:py-20">
         <div className="mx-auto w-full max-w-6xl px-4">
           <motion.h2 {...fadeUp} className="text-center text-3xl font-bold tracking-tight">
-            Built for the floor, not the back office
+            Everything your family needs to coordinate care
           </motion.h2>
           <p className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
-            Caregivers get simplicity. Supervisors get visibility. Records stay intact.
+            Medications, appointments, tasks, and notes — shared with the people who help.
           </p>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f, i) => (
@@ -270,7 +278,7 @@ export default function Landing() {
       <section id="roles" className="py-16 sm:py-20">
         <div className="mx-auto w-full max-w-6xl px-4">
           <motion.h2 {...fadeUp} className="text-center text-3xl font-bold tracking-tight">
-            Two views. One system.
+            Two apps. One care team.
           </motion.h2>
           <div className="mt-10 grid gap-4 md:grid-cols-2">
             {roles.map((r, i) => (
@@ -292,10 +300,97 @@ export default function Landing() {
                   ))}
                 </ul>
                 <Button className="mt-6 w-full cursor-pointer" asChild>
-                  <Link to={r.href}>{r.cta} <ArrowRight className="ml-1 size-4" /></Link>
+                  <a href={r.href} download>
+                    {r.cta} <ArrowRight className="ml-1 size-4" />
+                  </a>
                 </Button>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Apps */}
+      <section id="apps" className="border-t border-border/60 bg-card/40 py-16 sm:py-20">
+        <div className="mx-auto w-full max-w-6xl px-4">
+          <motion.h2 {...fadeUp} className="text-center text-3xl font-bold tracking-tight">
+            Get both apps
+          </motion.h2>
+          <p className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
+            The organizer plans care. The caregiver carries it out. Both connect to the
+            same shared workspace.
+          </p>
+          <div className="mt-10 grid gap-4 md:grid-cols-2">
+            <motion.div
+              {...fadeUp}
+              className="card-layer flex flex-col rounded-xl border border-border/70 bg-card p-6"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex size-11 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+                  <Users className="size-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold tracking-tight">CareShift Organizer</h3>
+                  <p className="text-xs text-muted-foreground">For the family organizer</p>
+                </div>
+              </div>
+              <ul className="mt-4 flex-1 space-y-2.5">
+                {[
+                  "Medications, appointments, and care tasks",
+                  "Care team and care recipient profiles",
+                  "Care journal, reports, and issue follow-up",
+                ].map((point) => (
+                  <li key={point} className="flex items-start gap-2 text-sm">
+                    <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-complete" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+              <Button className="mt-6 w-full cursor-pointer" asChild>
+                <a href="/downloads/careshift-organizer.apk" download>
+                  Download organizer APK <ArrowRight className="ml-1 size-4" />
+                </a>
+              </Button>
+              <p className="mt-2 text-center text-[11px] text-muted-foreground">
+                Android · internal build · 34 MB
+              </p>
+            </motion.div>
+
+            <motion.div
+              {...fadeUp}
+              transition={{ delay: 0.08 }}
+              className="card-layer flex flex-col rounded-xl border border-border/70 bg-card p-6"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex size-11 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+                  <Smartphone className="size-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold tracking-tight">CareShift Caregiver</h3>
+                  <p className="text-xs text-muted-foreground">For family and hired caregivers</p>
+                </div>
+              </div>
+              <ul className="mt-4 flex-1 space-y-2.5">
+                {[
+                  "Today's checklist and one-tap confirmation",
+                  "Medication doses, visits, and handoff notes",
+                  "Task notes, issues, and device reminders",
+                ].map((point) => (
+                  <li key={point} className="flex items-start gap-2 text-sm">
+                    <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-complete" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+              <Button className="mt-6 w-full cursor-pointer" asChild>
+                <a href="/downloads/careshift-caregiver.apk" download>
+                  Download caregiver APK <ArrowRight className="ml-1 size-4" />
+                </a>
+              </Button>
+              <p className="mt-2 text-center text-[11px] text-muted-foreground">
+                Android · internal build · 36 MB
+              </p>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -308,10 +403,10 @@ export default function Landing() {
           </motion.h2>
           <div className="mt-10 grid gap-6 md:grid-cols-4">
             {[
-              ["1", "Admin sets up", "Create shifts, task templates, and recurring assignments."],
-              ["2", "Caregiver signs in", "Sees only their shift and today's checklist."],
-              ["3", "One tap to complete", "Exact time, caregiver, and task recorded server-side."],
-              ["4", "Everything tracked", "Live dashboard, history, reports, and audit trail."],
+              ["1", "Add your loved one", "Create the care profile, medication schedule, and care notes."],
+              ["2", "Invite the care team", "Family members and caregivers join the same workspace."],
+              ["3", "Share the daily plan", "Meds, appointments, and tasks appear for everyone."],
+              ["4", "Stay in sync", "One tap updates the team and builds the care journal."],
             ].map(([n, title, body], i) => (
               <motion.div key={n} {...fadeUp} transition={{ delay: i * 0.06 }} className="relative">
                 <div className="flex size-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
@@ -334,14 +429,16 @@ export default function Landing() {
           >
             <div className="hero-grid absolute inset-0 opacity-20" aria-hidden />
             <div className="relative">
-              <h2 className="text-3xl font-bold tracking-tight">Ready to see every shift clearly?</h2>
+              <h2 className="text-3xl font-bold tracking-tight">Ready to bring your care team together?</h2>
               <p className="mx-auto mt-3 max-w-lg text-primary-foreground/80">
-                Sign in to monitor today's shifts — or open the caregiver view to see the
-                1-tap checklist your team uses in the field.
+                Replace the chaos of group chats, sticky notes, and phone calls with one
+                shared space for medications, appointments, tasks, and care notes.
               </p>
               <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button size="lg" variant="secondary" asChild className="w-full cursor-pointer sm:w-auto">
-                  <Link to="/auth?returnTo=%2Fdashboard">Supervisor sign-in</Link>
+                  <a href="/downloads/careshift-organizer.apk" download>
+                    Download organizer app
+                  </a>
                 </Button>
                 <Button
                   size="lg"
@@ -349,9 +446,17 @@ export default function Landing() {
                   asChild
                   className="w-full cursor-pointer border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 sm:w-auto"
                 >
-                  <Link to="/auth?returnTo=%2Fchecklist">Caregiver sign-in</Link>
+                  <a href="/downloads/careshift-caregiver.apk" download>
+                    Download caregiver app
+                  </a>
                 </Button>
               </div>
+              <p className="mt-4 text-sm text-primary-foreground/70">
+                Already have an account?{" "}
+                <Link to="/auth?returnTo=%2Fdashboard" className="underline underline-offset-4">
+                  Open the organizer console
+                </Link>
+              </p>
             </div>
           </motion.div>
         </div>
@@ -362,10 +467,10 @@ export default function Landing() {
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-3 px-4 sm:flex-row">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <img src={logo} alt="" className="size-5 rounded bg-foreground" />
-            {APP_NAME} — Caregiver Task & Shift Tracking
+            {APP_NAME} — Family Care Coordination
           </div>
           <p className="text-xs text-muted-foreground">
-            Reliable for caregivers · Visible for supervisors · Records preserved
+            Reliable for caregivers · Visible for families · Records preserved
           </p>
         </div>
       </footer>

@@ -1,8 +1,9 @@
-# CareShift — Caregiver Task & Shift Tracking System
+# CareShift — Family Care Coordination
 
-CareShift is a caregiver shift and checklist tracking system. Caregivers complete
-their daily checklist from a phone; supervisors monitor progress, visits,
-medications, vitals, issues, and audit history from an operations dashboard.
+CareShift brings your whole care team together in one place — so nobody misses a
+medication, forgets an appointment, or feels left out of a loved one's care. The
+organizer plans medications, appointments, and tasks; family members and hired
+caregivers carry out the daily care plan and log notes from their phones.
 
 > **Repository split**
 >
@@ -17,7 +18,7 @@ medications, vitals, issues, and audit history from an operations dashboard.
 ## Stack
 
 - **Website:** Vite + React 19 + TypeScript + Tailwind v4 + shadcn/ui (PWA)
-- **Mobile:** Expo / React Native (Android and iOS)
+- **Mobile:** two Expo / React Native apps — Organizer and Caregiver (Android)
 - **API:** Cloudflare Workers + Hono
 - **Database:** Cloudflare D1 (SQLite) + Drizzle ORM
 - **Auth:** Better Auth email/password sessions
@@ -29,8 +30,9 @@ medications, vitals, issues, and audit history from an operations dashboard.
 ```
 CareShift/
 ├─ apps/
-│  ├─ web/                  # admin/supervisor website and mobile-first PWA
-│  ├─ mobile/               # Expo caregiver app
+│  ├─ web/                  # organizer console and mobile-first PWA
+│  ├─ mobile/               # Expo CareShift Caregiver app
+│  ├─ organizer/            # Expo CareShift Organizer app
 │  └─ api/                  # Cloudflare Workers API (Hono, D1, Better Auth)
 ├─ packages/
 │  ├─ shared/               # shared constants, types, date/time helpers
@@ -43,20 +45,20 @@ CareShift/
 
 ## Features
 
-### Supervisor
+### Organizer
 
-- Live dashboard: today's totals, completion rate, overdue tasks, issues, and
-  per-caregiver progress
-- Today's schedule grouped by shift
-- Caregiver accounts, password resets, shifts, and workload views
+- Today dashboard: medication doses, appointments, task completion, and open issues
+- Shared care calendar for appointments, family visits, and reminders
+- Care recipient profiles, care team accounts, and care schedules
+- Medication schedules, dose confirmation, stock, and low-stock warnings
+- Care journal for observations, health notes, and daily updates
 - Task templates and recurring assignments materialized into daily checklists
-- Patients, vitals, care events, medications and dose logs, visits, and reports
-- History with CSV/print export, issue resolution, and a filterable audit log
+- Reports, history, issue resolution, and a filterable audit log
 - One-time workspace setup; public sign-up is disabled
 
 ### Caregiver
 
-- Sign in and see only the assigned shift and today's checklist
+- Sign in and see only the assigned care plan and today's checklist
 - One-tap task completion with server-side timestamps and audit trail
 - Task notes and issue reporting
 - GPS clock-in/out with a live visit timer and handover notes
@@ -87,6 +89,7 @@ The link script creates gitignored symlinks:
 .env.keys            -> careshift-private/env/root.env.keys
 apps/api/.dev.vars   -> careshift-private/env/api.dev.vars
 apps/mobile/.env.local -> careshift-private/env/mobile.env.local
+apps/organizer/.env.local -> careshift-private/env/organizer.env.local
 ```
 
 Without access, start from the committed examples:
@@ -110,18 +113,35 @@ npm run dev:api             # http://localhost:8787
 # terminal 2 — website
 npm run dev:web             # http://localhost:5173
 
-# optional — Expo app
-npm run dev:mobile
+# optional — Expo apps
+npm run dev:mobile      # CareShift Caregiver
+npm run dev:organizer   # CareShift Organizer
 ```
 
-The mobile API URL comes from `EXPO_PUBLIC_API_URL` in
-`apps/mobile/.env.local`. The phone and the API host must be on the same network.
+Each app reads `EXPO_PUBLIC_API_URL` from its own `.env.local`. The phone and the
+API host must be on the same network.
 
-### Android app
+### Android apps
 
-A debug APK is served by the local website at
-`/downloads/careshift-debug.apk`. Build instructions, native requirements, and
-device setup are in [`apps/mobile/README.md`](apps/mobile/README.md).
+Two standalone APKs are served by the local website:
+
+- **CareShift Organizer** — `/downloads/careshift-organizer.apk`
+- **CareShift Caregiver** — `/downloads/careshift-caregiver.apk`
+
+Both are `arm64-v8a`, debug-signed internal release builds (not Play Store
+builds). The API URL is baked in at build time. Device setup and build details:
+
+- [`apps/organizer/README.md`](apps/organizer/README.md)
+- [`apps/mobile/README.md`](apps/mobile/README.md)
+
+Rebuild from the repository root:
+
+```bash
+npm run prebuild:organizer && npm run apk:organizer
+npm run prebuild:caregiver && npm run apk:caregiver
+```
+
+The release APK is written to `android/app/build/outputs/apk/release/app-release.apk`.
 
 ## Cloudflare API
 

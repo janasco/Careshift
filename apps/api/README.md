@@ -56,7 +56,8 @@ exists. Caregiver accounts will be created by admin endpoints in the next phase.
 | GET/POST/PATCH | `/api/patients` | Admin |
 | GET | `/api/patients/summaries` | Admin |
 | GET/POST/PATCH | `/api/vitals` | Authenticated; admin edit |
-| GET/POST/PATCH | `/api/care-events` | Authenticated; admin edit |
+| GET/POST/PATCH | `/api/care-events` | Authenticated; admin edit (care journal) |
+| GET/POST/PATCH/DELETE | `/api/calendar` | Shared calendar; authenticated read, admin write |
 | GET/POST/PATCH | `/api/medications` | Auth read, admin write |
 | GET | `/api/medications/doses?date=` | Today's doses |
 | POST | `/api/medications/doses/log` | Given / skipped / missed |

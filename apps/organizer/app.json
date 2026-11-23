@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "CareShift Organizer",
+    "slug": "careshift-organizer",
+    "version": "0.1.0",
+    "scheme": "careshift-organizer",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-secure-store"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.apexsinc.careshift.organizer"
+    },
+    "android": {
+      "package": "com.apexsinc.careshift.organizer",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f172a"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    }
+  }
+}

@@ -1,12 +1,13 @@
 {
   "expo": {
-    "name": "CareShift",
+    "name": "CareShift Caregiver",
     "slug": "careshift",
     "version": "0.1.0",
     "scheme": "careshift",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "icon": "./assets/icon.png",
     "plugins": [
       "expo-router",
       [
@@ -24,7 +25,11 @@
       "bundleIdentifier": "com.apexsinc.careshift"
     },
     "android": {
-      "package": "com.apexsinc.careshift"
+      "package": "com.apexsinc.careshift",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f766e"
+      }
     },
     "web": {
       "bundler": "metro",

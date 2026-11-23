@@ -449,6 +449,34 @@ export const visits = sqliteTable(
   ],
 );
 
+export const calendarEvents = sqliteTable(
+  "calendar_events",
+  {
+    id: text("id").primaryKey(),
+    patientId: text("patient_id").references(() => patients.id, {
+      onDelete: "set null",
+    }),
+    patientName: text("patient_name"),
+    title: text("title").notNull(),
+    eventType: text("event_type").notNull().default("appointment"),
+    location: text("location"),
+    notes: text("notes"),
+    startMs: integer("start_ms").notNull(),
+    endMs: integer("end_ms"),
+    allDay: integer("all_day", { mode: "boolean" }).notNull().default(false),
+    createdByUserId: text("created_by_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    createdByName: text("created_by_name"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    index("calendar_events_start_ms_idx").on(table.startMs),
+    index("calendar_events_patient_id_idx").on(table.patientId),
+  ],
+);
+
 export const auditLogs = sqliteTable(
   "audit_logs",
   {
@@ -483,6 +511,7 @@ export const schema = {
   medications,
   medicationLogs,
   visits,
+  calendarEvents,
   auditLogs,
 };
 

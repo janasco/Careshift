@@ -12,9 +12,9 @@ convex/importData.ts
 .wrangler
 .dev.vars
 .expo
-apps/mobile/.expo
-apps/mobile/android
-apps/mobile/ios
+apps/*/.expo
+apps/*/android
+apps/*/ios
 .turbo
 *.apk
 *.aab
