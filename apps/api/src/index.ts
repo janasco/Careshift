@@ -11,6 +11,8 @@ import caregivers from "./routes/caregivers";
 import shifts from "./routes/shifts";
 import careEvents from "./routes/careEvents";
 import calendar from "./routes/calendar";
+import push from "./routes/push";
+import { runPushScheduler } from "./lib/push-scheduler";
 import handoff from "./routes/handoff";
 import medications from "./routes/medications";
 import visits from "./routes/visits";
@@ -78,6 +80,7 @@ app.route("/api/patient-options", patientOptions);
 app.route("/api/vitals", vitals);
 app.route("/api/care-events", careEvents);
 app.route("/api/calendar", calendar);
+app.route("/api/push", push);
 app.route("/api/handoff", handoff);
 app.route("/api/medications", medications);
 app.route("/api/visits", visits);
@@ -118,8 +121,12 @@ export type AppType = typeof app;
 
 export default {
   fetch: app.fetch,
-  scheduled: async (controller: ScheduledController) => {
+  scheduled: async (controller: ScheduledController, env, ctx) => {
     console.log("Careshift cron", controller.cron);
-    // Phase 2: materialize daily tasks, medication doses, and visit reminders.
+    ctx.waitUntil(
+      runPushScheduler(env).catch((error) => {
+        console.error("Push scheduler failed", error);
+      }),
+    );
   },
 } satisfies ExportedHandler<Bindings>;

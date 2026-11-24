@@ -5,6 +5,7 @@ export type Bindings = {
   BETTER_AUTH_URL: string;
   WEB_ORIGIN: string;
   TRUSTED_ORIGINS?: string;
+  FIREBASE_SERVICE_ACCOUNT?: string;
   TIMEZONE_OFFSET_MINUTES?: string;
   ALLOW_PUBLIC_SIGNUP?: string;
 };

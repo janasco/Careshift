@@ -1,21 +1,45 @@
 import { useQuery } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { Alert, StyleSheet, Text, View } from "react-native";
 
 import { Avatar, Badge, Button, Card, Loading, Row, Screen, SectionTitle } from "@/components/ui";
 import { API_URL, apiGet, authClient } from "@/lib/api";
+import { ensurePushPermission, registerPushToken } from "@/lib/push";
 import type { Me } from "@/lib/types";
 import { colors } from "@/lib/theme";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const [pushBusy, setPushBusy] = useState(false);
   const me = useQuery({
     queryKey: ["me"],
     queryFn: () => apiGet<Me>("/api/me"),
   });
 
   if (me.isLoading) return <Loading />;
+
+  const enablePush = async () => {
+    setPushBusy(true);
+    try {
+      const granted = await ensurePushPermission();
+      if (granted) {
+        await registerPushToken();
+        Alert.alert(
+          "Notifications enabled",
+          "You will receive medication, appointment, and task reminders.",
+        );
+      } else {
+        Alert.alert(
+          "Permission needed",
+          "Allow notifications in Android settings to receive reminders.",
+        );
+      }
+    } finally {
+      setPushBusy(false);
+    }
+  };
 
   const signOut = () => {
     Alert.alert("Sign out?", "You will need your email and password to sign in again.", [
@@ -61,6 +85,12 @@ export default function ProfileScreen() {
         <Row label="Mode" value="Organizer" />
       </Card>
 
+      <Button
+        title="Enable push notifications"
+        variant="secondary"
+        loading={pushBusy}
+        onPress={enablePush}
+      />
       <Button title="Sign out" variant="danger" onPress={signOut} />
       <Text style={styles.footer}>
         CareShift keeps the whole care team connected, informed, and confident

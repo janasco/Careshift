@@ -477,6 +477,48 @@ export const calendarEvents = sqliteTable(
   ],
 );
 
+export const pushTokens = sqliteTable(
+  "push_tokens",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    token: text("token").notNull(),
+    platform: text("platform").notNull().default("android"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+    lastSeenAt: integer("last_seen_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("push_tokens_token_unique").on(table.token),
+    index("push_tokens_user_id_idx").on(table.userId),
+  ],
+);
+
+export const pushLogs = sqliteTable(
+  "push_logs",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    entityId: text("entity_id").notNull(),
+    scheduledFor: integer("scheduled_for").notNull(),
+    sentAt: integer("sent_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("push_logs_unique").on(
+      table.type,
+      table.entityId,
+      table.userId,
+      table.scheduledFor,
+    ),
+    index("push_logs_sent_at_idx").on(table.sentAt),
+  ],
+);
+
 export const auditLogs = sqliteTable(
   "audit_logs",
   {
@@ -512,6 +554,8 @@ export const schema = {
   medicationLogs,
   visits,
   calendarEvents,
+  pushTokens,
+  pushLogs,
   auditLogs,
 };
 

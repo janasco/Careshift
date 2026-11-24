@@ -58,6 +58,8 @@ exists. Caregiver accounts will be created by admin endpoints in the next phase.
 | GET/POST/PATCH | `/api/vitals` | Authenticated; admin edit |
 | GET/POST/PATCH | `/api/care-events` | Authenticated; admin edit (care journal) |
 | GET/POST/PATCH/DELETE | `/api/calendar` | Shared calendar; authenticated read, admin write |
+| POST/DELETE | `/api/push/tokens` | Register or remove an Android FCM device token |
+| POST | `/api/push/test` | Send a test push to the admin's devices |
 | GET/POST/PATCH | `/api/medications` | Auth read, admin write |
 | GET | `/api/medications/doses?date=` | Today's doses |
 | POST | `/api/medications/doses/log` | Given / skipped / missed |
@@ -83,6 +85,18 @@ exists. Caregiver accounts will be created by admin endpoints in the next phase.
 
 `TIMEZONE_OFFSET_MINUTES` (default `480` for Asia/Manila) controls how local
 shift times are converted to timestamps during materialization.
+
+## Push notifications
+
+The Worker runs a five-minute cron and sends Firebase Cloud Messaging alerts for:
+
+- appointments starting within 30 minutes
+- medication doses and tasks due within 10 minutes
+
+Set the `FIREBASE_SERVICE_ACCOUNT` Worker secret to the Firebase Admin service
+account JSON. The service account needs the **Firebase Cloud Messaging API
+Admin** role. Both mobile apps register their FCM device token after the user
+grants notification permission.
 
 ## Import existing Convex data
 

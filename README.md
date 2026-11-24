@@ -34,6 +34,7 @@ stay same-origin.
 - **Database:** Cloudflare D1 (SQLite) + Drizzle ORM
 - **Auth:** Better Auth email/password sessions
 - **Realtime:** Durable Object WebSocket broadcasts
+- **Push notifications:** Firebase Cloud Messaging
 - **Legacy backend:** Convex code remains on the `convex-backup` tag for rollback
 
 ## Repository structure
@@ -64,6 +65,7 @@ CareShift/
 - Medication schedules, dose confirmation, stock, and low-stock warnings
 - Care journal for observations, health notes, and daily updates
 - Task templates and recurring assignments materialized into daily checklists
+- Push alerts for appointments, medications, and tasks
 - Reports, history, issue resolution, and a filterable audit log
 - One-time workspace setup; public sign-up is disabled
 
@@ -77,6 +79,7 @@ CareShift/
 - Vitals and care-event entry
 - Handoff summary of recent care activity
 - Local Android task and medication reminders
+- Firebase push notifications when the app is closed
 - Offline-safe queue for checklist actions
 
 ## Quick start

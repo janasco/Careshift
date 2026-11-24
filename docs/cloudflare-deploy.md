@@ -17,7 +17,7 @@ Target architecture:
 - **Workers** serves the Hono API.
 - **D1** stores the database.
 - **Durable Object** handles workspace realtime events.
-- **Cron Trigger** materializes daily tasks/reminders.
+- **Cron Trigger** sends FCM reminders every five minutes.
 - Better Auth handles email/password sessions.
 
 For a production site, route the Worker on the **same hostname** as Pages:
@@ -82,6 +82,13 @@ npx wrangler secret put BETTER_AUTH_SECRET --config apps/api/wrangler.jsonc
 ```
 
 Use a long random value (32+ bytes).
+
+For push notifications, add the Firebase Admin service account as a secret. The
+service account must have the **Firebase Cloud Messaging API Admin** role:
+
+```bash
+npx wrangler secret put FIREBASE_SERVICE_ACCOUNT --config apps/api/wrangler.jsonc
+```
 
 Add the same-zone Worker route:
 

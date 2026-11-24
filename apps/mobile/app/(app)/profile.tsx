@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiGet, authClient } from "@/lib/api";
+import { registerPushToken } from "@/lib/push";
 import { ensureRemindersPermission } from "@/lib/reminders";
 
 export default function ProfileScreen() {
@@ -28,6 +29,7 @@ export default function ProfileScreen() {
     try {
       const granted = await ensureRemindersPermission();
       if (granted) {
+        await registerPushToken();
         Alert.alert(
           "Reminders enabled",
           "Task and medication reminders will be scheduled from today's checklist and medication list.",

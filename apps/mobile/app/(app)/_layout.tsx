@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { Redirect, Tabs } from "expo-router";
+import * as Notifications from "expo-notifications";
+import { Redirect, Tabs, useRouter } from "expo-router";
+import { useEffect } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -10,14 +12,34 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiGet, authClient } from "@/lib/api";
+import { registerPushToken } from "@/lib/push";
 
 export default function AppLayout() {
   const { data: session, isPending } = authClient.useSession();
+  const router = useRouter();
   const me = useQuery({
     queryKey: ["me"],
     queryFn: () => apiGet("/api/me"),
     enabled: Boolean(session),
   });
+
+  useEffect(() => {
+    if (me.data?.profile?.role === "caregiver") {
+      void registerPushToken();
+    }
+  }, [me.data?.profile]);
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const kind = response.notification.request.content.data?.kind;
+        if (kind === "calendar") router.push("/(app)/calendar");
+        else if (kind === "medications") router.push("/(app)/medications");
+        else if (kind === "tasks") router.push("/(app)/checklist");
+      },
+    );
+    return () => subscription.remove();
+  }, [router]);
 
   if (isPending) {
     return (
