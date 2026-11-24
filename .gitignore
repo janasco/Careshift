@@ -29,3 +29,7 @@ apps/*/ios
 *.db
 backups/
 apps/api/wrangler.prod.jsonc
+google-services.json
+GoogleService-Info.plist
+firebase-debug.log
+*-firebase-adminsdk-*.json
