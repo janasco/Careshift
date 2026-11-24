@@ -28,3 +28,4 @@ apps/*/ios
 *.sqlite3
 *.db
 backups/
+apps/api/wrangler.prod.jsonc

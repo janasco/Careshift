@@ -39,11 +39,15 @@ with a pointer to the CareShift Caregiver app.
 
 ## Android APK
 
-A standalone internal release build is served by the local website:
+A standalone internal release build is published on the GitHub release:
 
 ```
-http://YOUR_HOST:5173/downloads/careshift-organizer.apk
+https://github.com/janasco/Careshift/releases/download/apps-v1/careshift-organizer.apk
 ```
+
+For local testing, the same build is served at
+`http://YOUR_HOST:5173/downloads/careshift-organizer.apk` while the local website
+is running.
 
 - `arm64-v8a`, debug-signed, package `com.apexsinc.careshift.organizer`
 - Min Android 7.0 (`minSdk 24`), target SDK 36

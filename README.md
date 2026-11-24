@@ -15,6 +15,16 @@ caregivers carry out the daily care plan and log notes from their phones.
 > Never commit `.env` files, tokens, API keys, real patient data, or backups to
 > this repository. See [Private configuration](#private-configuration).
 
+## Live deployment
+
+- **Website + API:** https://careshift.apexsinc.com
+- **Android apps:** [apps-v1 release](https://github.com/janasco/Careshift/releases/tag/apps-v1)
+  - [CareShift Organizer](https://github.com/janasco/Careshift/releases/download/apps-v1/careshift-organizer.apk)
+  - [CareShift Caregiver](https://github.com/janasco/Careshift/releases/download/apps-v1/careshift-caregiver.apk)
+
+The Worker is routed at `/api/*` on the same hostname, so website auth cookies
+stay same-origin.
+
 ## Stack
 
 - **Website:** Vite + React 19 + TypeScript + Tailwind v4 + shadcn/ui (PWA)
@@ -123,13 +133,17 @@ API host must be on the same network.
 
 ### Android apps
 
-Two standalone APKs are served by the local website:
+Two standalone APKs are published on the GitHub release:
 
-- **CareShift Organizer** — `/downloads/careshift-organizer.apk`
-- **CareShift Caregiver** — `/downloads/careshift-caregiver.apk`
+- **CareShift Organizer** — [download](https://github.com/janasco/Careshift/releases/download/apps-v1/careshift-organizer.apk)
+- **CareShift Caregiver** — [download](https://github.com/janasco/Careshift/releases/download/apps-v1/careshift-caregiver.apk)
+
+Local copies are also served at `/downloads/careshift-organizer.apk` and
+`/downloads/careshift-caregiver.apk` when the local website is running.
 
 Both are `arm64-v8a`, debug-signed internal release builds (not Play Store
-builds). The API URL is baked in at build time. Device setup and build details:
+builds). The API URL is baked in at build time; the published builds point at
+`https://careshift.apexsinc.com`. Device setup and build details:
 
 - [`apps/organizer/README.md`](apps/organizer/README.md)
 - [`apps/mobile/README.md`](apps/mobile/README.md)

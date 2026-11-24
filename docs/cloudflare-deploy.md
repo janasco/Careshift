@@ -1,5 +1,16 @@
 # Cloudflare deployment runbook
 
+## Current deployment
+
+- **Website + API:** https://careshift.apexsinc.com
+- **Worker:** `careshift-api`, routed at `careshift.apexsinc.com/api/*`
+- **D1:** `careshift`
+- **Pages:** `careshift-web`
+- **Android builds:** [apps-v1 release](https://github.com/janasco/Careshift/releases/tag/apps-v1)
+
+The APKs are hosted on GitHub Releases because Cloudflare Pages rejects files
+larger than 25 MiB.
+
 Target architecture:
 
 - **Pages** serves the Vite website.

@@ -25,6 +25,11 @@ const fadeUp = {
   viewport: { once: true, margin: "-60px" },
 };
 
+const ORGANIZER_APK =
+  "https://github.com/janasco/Careshift/releases/download/apps-v1/careshift-organizer.apk";
+const CAREGIVER_APK =
+  "https://github.com/janasco/Careshift/releases/download/apps-v1/careshift-caregiver.apk";
+
 const features = [
   {
     icon: Pill,
@@ -67,7 +72,7 @@ const roles = [
       "Invite family members and caregivers",
       "Follow the care journal and daily reports",
     ],
-    href: "/downloads/careshift-organizer.apk",
+    href: ORGANIZER_APK,
     cta: "Get the organizer app",
   },
   {
@@ -78,7 +83,7 @@ const roles = [
       "One-tap medication confirmation",
       "Add notes and report issues",
     ],
-    href: "/downloads/careshift-caregiver.apk",
+    href: CAREGIVER_APK,
     cta: "Get the caregiver app",
   },
 ];
@@ -347,7 +352,7 @@ export default function Landing() {
                 ))}
               </ul>
               <Button className="mt-6 w-full cursor-pointer" asChild>
-                <a href="/downloads/careshift-organizer.apk" download>
+                <a href={ORGANIZER_APK} download>
                   Download organizer APK <ArrowRight className="ml-1 size-4" />
                 </a>
               </Button>
@@ -383,7 +388,7 @@ export default function Landing() {
                 ))}
               </ul>
               <Button className="mt-6 w-full cursor-pointer" asChild>
-                <a href="/downloads/careshift-caregiver.apk" download>
+                <a href={CAREGIVER_APK} download>
                   Download caregiver APK <ArrowRight className="ml-1 size-4" />
                 </a>
               </Button>
@@ -436,7 +441,7 @@ export default function Landing() {
               </p>
               <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button size="lg" variant="secondary" asChild className="w-full cursor-pointer sm:w-auto">
-                  <a href="/downloads/careshift-organizer.apk" download>
+                  <a href={ORGANIZER_APK} download>
                     Download organizer app
                   </a>
                 </Button>
@@ -446,7 +451,7 @@ export default function Landing() {
                   asChild
                   className="w-full cursor-pointer border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 sm:w-auto"
                 >
-                  <a href="/downloads/careshift-caregiver.apk" download>
+                  <a href={CAREGIVER_APK} download>
                     Download caregiver app
                   </a>
                 </Button>

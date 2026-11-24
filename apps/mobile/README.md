@@ -24,12 +24,15 @@ QR code with Expo Go, or press `a` to start an Android emulator.
 
 ## Android APK
 
-CareShift Caregiver is an internal release build served by the local website.
-Replace `YOUR_HOST` with the machine's LAN IP or hostname:
+CareShift Caregiver is published on the GitHub release:
 
 ```
-http://YOUR_HOST:5173/downloads/careshift-caregiver.apk
+https://github.com/janasco/Careshift/releases/download/apps-v1/careshift-caregiver.apk
 ```
+
+For local testing, the same build is served at
+`http://YOUR_HOST:5173/downloads/careshift-caregiver.apk` while the local website
+is running.
 
 - `arm64-v8a`, debug-signed, package `com.apexsinc.careshift`
 - Standalone JS bundle — no Metro server needed on the phone
