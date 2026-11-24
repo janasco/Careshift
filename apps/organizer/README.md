@@ -58,6 +58,13 @@ The bundle is written to
 `android/app/build/outputs/bundle/release/app-release.aab`. Upload that file to
 Play Console.
 
+### Firebase config
+
+Android builds require `apps/organizer/google-services.json` in the app root.
+The file is gitignored and linked from the private repo by authorized
+maintainers. Without it, Firebase-backed native builds will not configure
+correctly.
+
 ## Screens
 
 ```

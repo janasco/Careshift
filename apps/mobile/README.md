@@ -43,6 +43,12 @@ The bundle is written to
 `android/app/build/outputs/bundle/release/app-release.aab`. Upload that file to
 Play Console. The organizer uses a separate app in [`../organizer`](../organizer).
 
+### Firebase config
+
+Android builds require `apps/mobile/google-services.json` in the app root. The
+file is gitignored and linked from the private repo by authorized maintainers.
+Without it, Firebase-backed native builds will not configure correctly.
+
 ## Sign in
 
 Use a caregiver account created by the admin. If accounts were imported, reset

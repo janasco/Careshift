@@ -101,7 +101,12 @@ The link script creates gitignored symlinks:
 apps/api/.dev.vars   -> careshift-private/env/api.dev.vars
 apps/mobile/.env.local -> careshift-private/env/mobile.env.local
 apps/organizer/.env.local -> careshift-private/env/organizer.env.local
+apps/mobile/google-services.json -> careshift-private/firebase/caregiver/google-services.json
+apps/organizer/google-services.json -> careshift-private/firebase/organizer/google-services.json
 ```
+
+Firebase Android configs contain project identifiers and API keys, so they are
+kept in the private repository and are gitignored here.
 
 Without access, start from the committed examples:
 
