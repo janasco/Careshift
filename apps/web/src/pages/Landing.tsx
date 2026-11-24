@@ -25,11 +25,6 @@ const fadeUp = {
   viewport: { once: true, margin: "-60px" },
 };
 
-const ORGANIZER_APK =
-  "https://github.com/janasco/Careshift/releases/download/apps-v1/careshift-organizer.apk";
-const CAREGIVER_APK =
-  "https://github.com/janasco/Careshift/releases/download/apps-v1/careshift-caregiver.apk";
-
 const features = [
   {
     icon: Pill,
@@ -72,8 +67,8 @@ const roles = [
       "Invite family members and caregivers",
       "Follow the care journal and daily reports",
     ],
-    href: ORGANIZER_APK,
-    cta: "Get the organizer app",
+    href: "/auth?returnTo=%2Fdashboard",
+    cta: "Open the organizer console",
   },
   {
     icon: Smartphone,
@@ -83,8 +78,8 @@ const roles = [
       "One-tap medication confirmation",
       "Add notes and report issues",
     ],
-    href: CAREGIVER_APK,
-    cta: "Get the caregiver app",
+    href: "/auth?returnTo=%2Fchecklist",
+    cta: "Open the caregiver checklist",
   },
 ];
 
@@ -109,7 +104,7 @@ export default function Landing() {
           </Link>
           <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground md:flex">
             <a href="#features" className="transition-colors hover:text-foreground">Features</a>
-            <a href="#apps" className="transition-colors hover:text-foreground">Get the apps</a>
+            <a href="#apps" className="transition-colors hover:text-foreground">Mobile apps</a>
             <a href="#how" className="transition-colors hover:text-foreground">How it works</a>
           </nav>
           <div className="flex items-center gap-2">
@@ -165,12 +160,12 @@ export default function Landing() {
               className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row"
             >
               <Button size="lg" asChild className="w-full cursor-pointer sm:w-auto">
-                <a href="#apps">
-                  Get the apps <ArrowRight className="ml-1.5 size-4" />
-                </a>
+                <Link to="/auth?returnTo=%2Fdashboard">
+                  Open the organizer console <ArrowRight className="ml-1.5 size-4" />
+                </Link>
               </Button>
               <Button size="lg" variant="outline" asChild className="w-full cursor-pointer sm:w-auto">
-                <Link to="/auth?returnTo=%2Fdashboard">Open the organizer console</Link>
+                <Link to="/auth?returnTo=%2Fchecklist">Open the caregiver checklist</Link>
               </Button>
             </motion.div>
           </div>
@@ -319,11 +314,11 @@ export default function Landing() {
       <section id="apps" className="border-t border-border/60 bg-card/40 py-16 sm:py-20">
         <div className="mx-auto w-full max-w-6xl px-4">
           <motion.h2 {...fadeUp} className="text-center text-3xl font-bold tracking-tight">
-            Get both apps
+            CareShift on Google Play
           </motion.h2>
           <p className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
-            The organizer plans care. The caregiver carries it out. Both connect to the
-            same shared workspace.
+            The organizer and caregiver apps are distributed through Google Play.
+            Install and update them from the Play Store — no APK downloads.
           </p>
           <div className="mt-10 grid gap-4 md:grid-cols-2">
             <motion.div
@@ -351,14 +346,9 @@ export default function Landing() {
                   </li>
                 ))}
               </ul>
-              <Button className="mt-6 w-full cursor-pointer" asChild>
-                <a href={ORGANIZER_APK} download>
-                  Download organizer APK <ArrowRight className="ml-1 size-4" />
-                </a>
-              </Button>
-              <p className="mt-2 text-center text-[11px] text-muted-foreground">
-                Android · internal build · 34 MB
-              </p>
+              <div className="mt-6 flex items-center justify-center gap-2 rounded-lg border border-border/70 bg-muted/40 px-4 py-3 text-sm font-semibold text-muted-foreground">
+                <Smartphone className="size-4" /> Google Play release in preparation
+              </div>
             </motion.div>
 
             <motion.div
@@ -387,14 +377,9 @@ export default function Landing() {
                   </li>
                 ))}
               </ul>
-              <Button className="mt-6 w-full cursor-pointer" asChild>
-                <a href={CAREGIVER_APK} download>
-                  Download caregiver APK <ArrowRight className="ml-1 size-4" />
-                </a>
-              </Button>
-              <p className="mt-2 text-center text-[11px] text-muted-foreground">
-                Android · internal build · 36 MB
-              </p>
+              <div className="mt-6 flex items-center justify-center gap-2 rounded-lg border border-border/70 bg-muted/40 px-4 py-3 text-sm font-semibold text-muted-foreground">
+                <Smartphone className="size-4" /> Google Play release in preparation
+              </div>
             </motion.div>
           </div>
         </div>
@@ -441,9 +426,7 @@ export default function Landing() {
               </p>
               <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button size="lg" variant="secondary" asChild className="w-full cursor-pointer sm:w-auto">
-                  <a href={ORGANIZER_APK} download>
-                    Download organizer app
-                  </a>
+                  <Link to="/auth?returnTo=%2Fdashboard">Open the organizer console</Link>
                 </Button>
                 <Button
                   size="lg"
@@ -451,9 +434,7 @@ export default function Landing() {
                   asChild
                   className="w-full cursor-pointer border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 sm:w-auto"
                 >
-                  <a href={CAREGIVER_APK} download>
-                    Download caregiver app
-                  </a>
+                  <Link to="/auth?returnTo=%2Fchecklist">Open the caregiver checklist</Link>
                 </Button>
               </div>
               <p className="mt-4 text-sm text-primary-foreground/70">
@@ -474,9 +455,19 @@ export default function Landing() {
             <img src={logo} alt="" className="size-5 rounded bg-foreground" />
             {APP_NAME} — Family Care Coordination
           </div>
-          <p className="text-xs text-muted-foreground">
-            Reliable for caregivers · Visible for families · Records preserved
-          </p>
+          <div className="flex flex-col items-center gap-2 sm:items-end">
+            <p className="text-xs text-muted-foreground">
+              Reliable for caregivers · Visible for families · Records preserved
+            </p>
+            <div className="flex gap-4 text-xs font-medium text-muted-foreground">
+              <Link to="/privacy" className="hover:text-foreground">
+                Privacy
+              </Link>
+              <Link to="/data-deletion" className="hover:text-foreground">
+                Data deletion
+              </Link>
+            </div>
+          </div>
         </div>
       </footer>
     </motion.div>

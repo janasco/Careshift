@@ -18,9 +18,10 @@ caregivers carry out the daily care plan and log notes from their phones.
 ## Live deployment
 
 - **Website + API:** https://careshift.apexsinc.com
-- **Android apps:** [apps-v1 release](https://github.com/janasco/Careshift/releases/tag/apps-v1)
-  - [CareShift Organizer](https://github.com/janasco/Careshift/releases/download/apps-v1/careshift-organizer.apk)
-  - [CareShift Caregiver](https://github.com/janasco/Careshift/releases/download/apps-v1/careshift-caregiver.apk)
+- **Mobile apps:** distributed through Google Play (listings in preparation)
+
+APK downloads are not published. The mobile apps are shipped as Android App
+Bundles through Google Play.
 
 The Worker is routed at `/api/*` on the same hostname, so website auth cookies
 stay same-origin.
@@ -131,31 +132,26 @@ npm run dev:organizer   # CareShift Organizer
 Each app reads `EXPO_PUBLIC_API_URL` from its own `.env.local`. The phone and the
 API host must be on the same network.
 
-### Android apps
+### Mobile apps (Google Play)
 
-Two standalone APKs are published on the GitHub release:
+CareShift Organizer and CareShift Caregiver are distributed through Google Play.
+No APK downloads are published.
 
-- **CareShift Organizer** — [download](https://github.com/janasco/Careshift/releases/download/apps-v1/careshift-organizer.apk)
-- **CareShift Caregiver** — [download](https://github.com/janasco/Careshift/releases/download/apps-v1/careshift-caregiver.apk)
-
-Local copies are also served at `/downloads/careshift-organizer.apk` and
-`/downloads/careshift-caregiver.apk` when the local website is running.
-
-Both are `arm64-v8a`, debug-signed internal release builds (not Play Store
-builds). The API URL is baked in at build time; the published builds point at
-`https://careshift.apexsinc.com`. Device setup and build details:
+The apps are built as Android App Bundles (`.aab`) with a private upload key and
+submitted to Play Console. Device setup and build details:
 
 - [`apps/organizer/README.md`](apps/organizer/README.md)
 - [`apps/mobile/README.md`](apps/mobile/README.md)
 
-Rebuild from the repository root:
+Build from the repository root:
 
 ```bash
-npm run prebuild:organizer && npm run apk:organizer
-npm run prebuild:caregiver && npm run apk:caregiver
+npm run prebuild:organizer && npm run bundle:organizer
+npm run prebuild:caregiver && npm run bundle:caregiver
 ```
 
-The release APK is written to `android/app/build/outputs/apk/release/app-release.apk`.
+The bundle is written to `android/app/build/outputs/bundle/release/app-release.aab`.
+Signing keys and Play Console credentials are kept in the private repository.
 
 ## Cloudflare API
 

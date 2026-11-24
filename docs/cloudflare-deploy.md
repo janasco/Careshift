@@ -6,10 +6,10 @@
 - **Worker:** `careshift-api`, routed at `careshift.apexsinc.com/api/*`
 - **D1:** `careshift`
 - **Pages:** `careshift-web`
-- **Android builds:** [apps-v1 release](https://github.com/janasco/Careshift/releases/tag/apps-v1)
+- **Mobile apps:** distributed through Google Play (no APK downloads)
 
-The APKs are hosted on GitHub Releases because Cloudflare Pages rejects files
-larger than 25 MiB.
+The mobile apps are built as Android App Bundles and submitted to Play Console.
+Cloudflare Pages only serves the website and API.
 
 Target architecture:
 

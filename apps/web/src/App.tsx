@@ -13,6 +13,8 @@ function lazyPage(loader: () => Promise<{ default: ComponentType }>): FC<Record<
 
 const Landing = lazyPage(() => import("./pages/Landing"));
 const AuthPage = lazyPage(() => import("./pages/Auth"));
+const Privacy = lazyPage(() => import("./pages/Privacy"));
+const DataDeletion = lazyPage(() => import("./pages/DataDeletion"));
 const AdminDashboard = lazyPage(() => import("./pages/admin/AdminDashboard"));
 const TodaySchedule = lazyPage(() => import("./pages/admin/TodaySchedule"));
 const VitalSigns = lazyPage(() => import("./pages/admin/VitalSigns"));
@@ -76,6 +78,8 @@ export function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/data-deletion" element={<DataDeletion />} />
 
         {/* Caregiver */}
         <Route

@@ -9,7 +9,7 @@
     "ios": "expo start --ios",
     "typecheck": "tsc --noEmit",
     "prebuild:android": "expo prebuild --platform android",
-    "apk:android": "cd android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a"
+    "bundle:android": "cd android && ./gradlew bundleRelease -PreactNativeArchitectures=arm64-v8a"
   },
   "dependencies": {
     "@better-auth/expo": "^1.7.25",

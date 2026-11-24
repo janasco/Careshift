@@ -22,32 +22,26 @@ EXPO_PUBLIC_API_URL=http://YOUR_LAN_IP:8787
 The phone and the machine running the API must be on the same network. Scan the
 QR code with Expo Go, or press `a` to start an Android emulator.
 
-## Android APK
+## Google Play
 
-CareShift Caregiver is published on the GitHub release:
+CareShift Caregiver is distributed through Google Play. No APK downloads are
+published.
 
-```
-https://github.com/janasco/Careshift/releases/download/apps-v1/careshift-caregiver.apk
-```
-
-For local testing, the same build is served at
-`http://YOUR_HOST:5173/downloads/careshift-caregiver.apk` while the local website
-is running.
-
-- `arm64-v8a`, debug-signed, package `com.apexsinc.careshift`
-- Standalone JS bundle — no Metro server needed on the phone
+- Package: `com.apexsinc.careshift`
+- Min Android 7.0 (`minSdk 24`), target SDK 36
 - The API URL is baked in from `EXPO_PUBLIC_API_URL` at build time
-- Install from the phone browser and allow installs from unknown sources
 
-To rebuild from the repository root (JDK 21 + Android SDK required):
+Build the Android App Bundle from the repository root (JDK 21 + Android SDK and
+the private upload key required):
 
 ```bash
 npm run prebuild:caregiver
-npm run apk:caregiver
+npm run bundle:caregiver
 ```
 
-The APK is written to `android/app/build/outputs/apk/release/app-release.apk`.
-The organizer uses a separate app in [`../organizer`](../organizer).
+The bundle is written to
+`android/app/build/outputs/bundle/release/app-release.aab`. Upload that file to
+Play Console. The organizer uses a separate app in [`../organizer`](../organizer).
 
 ## Sign in
 

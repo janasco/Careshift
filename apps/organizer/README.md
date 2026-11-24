@@ -37,30 +37,26 @@ EXPO_PUBLIC_API_URL=http://YOUR_LAN_IP:8787
 The organizer signs in with an `admin` account. Caregiver accounts are rejected
 with a pointer to the CareShift Caregiver app.
 
-## Android APK
+## Google Play
 
-A standalone internal release build is published on the GitHub release:
+CareShift Organizer is distributed through Google Play. No APK downloads are
+published.
 
-```
-https://github.com/janasco/Careshift/releases/download/apps-v1/careshift-organizer.apk
-```
-
-For local testing, the same build is served at
-`http://YOUR_HOST:5173/downloads/careshift-organizer.apk` while the local website
-is running.
-
-- `arm64-v8a`, debug-signed, package `com.apexsinc.careshift.organizer`
+- Package: `com.apexsinc.careshift.organizer`
 - Min Android 7.0 (`minSdk 24`), target SDK 36
 - The API URL is baked in from `EXPO_PUBLIC_API_URL` at build time
 
-Rebuild from the repository root (JDK 21 + Android SDK required):
+Build the Android App Bundle from the repository root (JDK 21 + Android SDK and
+the private upload key required):
 
 ```bash
 npm run prebuild:organizer
-npm run apk:organizer
+npm run bundle:organizer
 ```
 
-The APK is written to `android/app/build/outputs/apk/release/app-release.apk`.
+The bundle is written to
+`android/app/build/outputs/bundle/release/app-release.aab`. Upload that file to
+Play Console.
 
 ## Screens
 
