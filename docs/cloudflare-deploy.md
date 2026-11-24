@@ -24,8 +24,28 @@ This keeps auth cookies same-origin.
 npx wrangler login
 ```
 
-Or set `CLOUDFLARE_API_TOKEN` in the environment. The token needs Workers,
-Pages, D1, and Durable Objects edit permissions.
+Or set `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in the environment.
+The token must be scoped to the CareShift Cloudflare account and have:
+
+| Scope | Permission |
+|---|---|
+| Account → D1 | **Edit** |
+| Account → Workers Scripts | **Edit** |
+| Account → Cloudflare Pages | **Edit** |
+| Account → Account Settings | Read |
+| Zone → Workers Routes | Edit (custom domain only) |
+| Zone → DNS | Edit (custom domain only) |
+
+A read-only token can list databases, Pages projects, and Worker scripts, but
+creating or deploying fails with `Authentication error` or
+`No access to the specified resource`. Update the token policy, not just the
+account membership role.
+
+```bash
+npx wrangler whoami
+```
+
+Confirm the expected account and token before continuing.
 
 ## 2. Create the production D1 database
 
@@ -60,13 +80,27 @@ Add the same-zone Worker route:
 ]
 ```
 
+### Without a custom domain
+
+For a first deployment you can use the generated hostnames:
+
+- Worker: `https://careshift-api.<account-subdomain>.workers.dev`
+- Website: `https://careshift-web.pages.dev`
+
+Set `BETTER_AUTH_URL` to the Worker URL and `WEB_ORIGIN` to the Pages URL, and
+build the website with `VITE_API_URL` pointing at the Worker. These are different
+sites, so browser auth cookies are cross-site; use a custom hostname with the
+same-zone `/api/*` route before treating the deployment as production.
+
 ## 4. Apply schema and import data
 
 ```bash
 npm run db:migrate:remote
 ```
 
-To carry over the current Convex data:
+To carry over existing data, generate the import SQL in the private repository
+and apply it from there. Real exports and patient data must never be added to
+this public repository.
 
 ```bash
 IMPORT_TEMP_PASSWORD='set-a-temporary-password' \
@@ -74,7 +108,7 @@ IMPORT_TEMP_PASSWORD='set-a-temporary-password' \
 
 npx wrangler d1 execute careshift --remote \
   --config apps/api/wrangler.jsonc \
-  --file /tmp/opencode/careshift-import.sql
+  --file import.sql
 ```
 
 Imported accounts use the temporary password. Reset them after login. Convex
