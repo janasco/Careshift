@@ -33,3 +33,4 @@ google-services.json
 GoogleService-Info.plist
 firebase-debug.log
 *-firebase-adminsdk-*.json
+apps/api/wrangler.production.jsonc
